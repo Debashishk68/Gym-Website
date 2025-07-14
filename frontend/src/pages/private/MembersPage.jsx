@@ -1,26 +1,33 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/NavBar";
 import SearchBar from "../../components/SearchBar";
 import MemberCard from "../../components/MemberCard";
 import SectionHeader from "../../components/SectionHeader";
-
-const dummyMembers = [
-  { id: 1, name: "John Doe", email: "john@example.com", phone: "1234567890", active: true },
-  { id: 2, name: "Jane Smith", email: "jane@example.com", phone: "0987654321", active: false },
-  { id: 3, name: "Rohit Kumar", email: "rohit@gym.com", phone: "9977665544", active: true },
-  { id: 4, name: "Meena Sharma", email: "meena@fit.com", phone: "8877665544", active: true },
-];
+import { useMembers } from "../../hooks/useDashboard";
 
 const MembersPage = () => {
-  const [members] = useState(dummyMembers);
+  const [members, setMembers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filtered = members.filter(
-    (m) =>
-      m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.phone.includes(searchTerm)
-  );
+  const { data, isSuccess, isError, error } = useMembers();
+
+  useEffect(() => {
+    if (isSuccess) {
+      setMembers(data.clients);
+    }
+  }, [isSuccess]);
+
+  const filtered = members.filter((m) => {
+    const nameMatch = m.fullname
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const emailMatch = m.email
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const phoneMatch = m.phone?.toString().includes(searchTerm); // convert number to string if needed
+
+    return nameMatch || emailMatch || phoneMatch;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black text-white">
@@ -38,7 +45,7 @@ const MembersPage = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {filtered.map((member) => (
-              <MemberCard key={member.id} member={member} />
+              <MemberCard key={member._id} member={member} />
             ))}
           </div>
         )}

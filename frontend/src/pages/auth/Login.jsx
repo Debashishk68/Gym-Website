@@ -1,36 +1,50 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AppHeader from "../../components/AppHeader";
 import TextInput from "../../components/TextInput";
 import sushilghimire from "../../assets/sushil-ghimire.jpg";
+import { useLogin } from "../../hooks/useAuth"; // your custom mutation hook
+import { ToastContainer, toast } from "react-toastify";
+import { useNavigate } from "react-router-dom"; 
+
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-
+ const navigate = useNavigate();
   const [formErrors, setFormErrors] = useState({});
+  const {
+    mutate: Login,
+    isPending,
+    isError,
+    error: Error,
+    isSuccess,
+  } = useLogin();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    setFormErrors((prev) => ({
-      ...prev,
-      email: value
-        ? emailRegex.test(value)
-          ? ""
-          : "Invalid email format"
-        : "Email is required",
-    }));
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
+
+    if (name === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      setFormErrors((prev) => ({
+        ...prev,
+        email: value
+          ? emailRegex.test(value)
+            ? ""
+            : "Invalid email format"
+          : "Email is required",
+      }));
+    }
   };
 
   const onSubmit = (e) => {
     e.preventDefault();
-
+    console.log(formData);
     const errors = {};
     if (!formData.email) errors.email = "Email is required";
     if (!formData.password) errors.password = "Password is required";
@@ -38,23 +52,30 @@ const LoginPage = () => {
     setFormErrors(errors);
 
     if (Object.keys(errors).length === 0) {
-      console.log("Login Data:", formData);
-      // dispatch(login(formData));
+      Login(formData); 
     }
   };
 
+  useEffect(() => {
+    if (isError) toast.error(`Login failed! ${Error.message}`);
+    if (isSuccess) {
+      toast.success("Login successful!");
+      navigate("/dashboard");
+    }
+  }, [isError, isSuccess]);
+
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fbfc] text-[#0d181c] animate-fade-in">
+      <ToastContainer className="absolute top-0 right-0 mt-4 mr-4" />
       <AppHeader />
 
       <div className="px-4 py-8">
-        <h2 className="text-3xl font-bold text-center">Welcome Back!</h2>
+        <h2 className="text-3xl font-bold text-center">Welcome Back</h2>
 
-        <div className="flex flex-col lg:flex-row items-center justify-center mt-8 gap-30">
-          {/* Login Form */}
+        <div className="flex flex-col-reverse lg:flex-row items-center justify-center mt-8 gap-10">
           <form
             onSubmit={onSubmit}
-            className="w-full max-w-md px-4 sm:px-0 p-6 space-y-6 transition-all duration-300 rounded-xl"
+            className="w-full max-w-md mx-auto p-8 space-y-6 bg-white rounded-lg shadow-md"
           >
             <TextInput
               name="email"
@@ -86,17 +107,19 @@ const LoginPage = () => {
 
             <button
               type="submit"
-              className="w-full h-12 bg-[#FFED00] hover:bg-[#d6c920] text-black font-medium rounded-lg transition duration-300"
+              disabled={isPending}
+              className={`w-full h-12 ${
+                isPending ? "bg-gray-400" : "bg-[#FFED00] hover:bg-[#d6c920]"
+              } text-black font-medium rounded-lg transition duration-300`}
             >
-              Log In
+              {isPending ? "Logging in..." : "Log In"}
             </button>
           </form>
 
-          {/* Image */}
           <img
             src={sushilghimire}
             alt="Login Visual"
-            className="hidden lg:block w-[40vw] h-[29vw] object-cover rounded-3xl"
+            className="w-[32rem] h-[25rem] object-cover rounded-3xl shadow-lg hidden lg:block"
           />
         </div>
       </div>

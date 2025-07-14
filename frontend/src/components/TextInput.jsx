@@ -1,10 +1,11 @@
 import React from 'react';
 
-const TextInput = ({ label, type = "text", onChange,placeholder, error, registerProps }) => {
+const TextInput = ({ name,label, type = "text", onChange,placeholder, error, registerProps }) => {
   return (
     <div className="w-full">
       <label className="block text-base font-medium mb-1">{label}</label>
       <input
+      name={name}
         type={type}
         placeholder={placeholder}
         {...registerProps}
