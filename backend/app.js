@@ -6,8 +6,11 @@ const authRouter = require("./routes/auth/index");
 const dashboardRouter = require("./routes/private/index")
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const certificateRoutes = require("./routes/private/certificate")
 const path = require("path");
 dotenv.config();
+require("./corn/deleteOldClients");
+
 
 connectMongoDb(process.env.MONGODB);
 const app = express();
@@ -30,6 +33,9 @@ app.use("/auth", authRouter);
 app.use("/dashboard", dashboardRouter);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/api/certificate", certificateRoutes);
+app.use("/certificates", express.static(path.join(__dirname, "certificates"))); // serve generated files
+
 
 // Start the server
 app.listen(3000, () => {

@@ -7,15 +7,18 @@ import SectionHeader from "../../components/SectionHeader";
 import thumbnail from "../../assets/thumbnail.svg";
 import { FaUserAlt, FaRupeeSign, FaChartBar } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
+import LoaderBar from "../../components/Loader"; 
 
 const DashboardPage = () => {
-  const [data,setData] = useState([]);
-  const { data:clients,isSuccess,isError,error } = useDashboard();
-   useEffect(() => {
-      if(isSuccess){
-        setData(clients)
-      }
-    }, [isSuccess])
+  const [data, setData] = useState([]);
+  const { data: clients, isSuccess, isError, error, isLoading } = useDashboard(); // 👈 add isLoading
+
+  useEffect(() => {
+    if (isSuccess) {
+      setData(clients);
+    }
+  }, [isSuccess, clients]);
+
   return (
     <div
       className="min-h-screen text-white"
@@ -27,6 +30,7 @@ const DashboardPage = () => {
       }}
     >
       <Navbar />
+      {isLoading && <LoaderBar />} {/* ✅ Loader shows while fetching */}
 
       <div className="px-4 sm:px-6 md:px-10 py-10 space-y-10 max-w-screen-xl mx-auto bg-black/70 rounded-xl backdrop-blur-md shadow-xl">
         {/* Heading */}
@@ -36,21 +40,19 @@ const DashboardPage = () => {
 
         {/* Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <StatCard icon={<FaUserAlt />} value={`${data.clients}+`} label="Total Members" />
-          <StatCard icon={<FaRupeeSign />} value={`₹${data.revenue}+`} label="Monthly Revenue" />
+          <StatCard icon={<FaUserAlt />} value={`${data.clients || 0}+`} label="Total Members" />
+          <StatCard icon={<FaRupeeSign />} value={`₹${data.revenue || 0}+`} label="Monthly Revenue" />
           <StatCard icon={<FaChartBar />} value="10+" label="New this week" />
         </div>
 
-        {/* Search + Charts */}
+        {/* Charts */}
         <div className="space-y-6 flex flex-col">
-          <SearchBar onSearch={(q) => console.log(q)} />
-
           <SectionHeader title="Revenue Trends" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <RevenueChart label={"monthly"}/>
-            <RevenueChart label={"weekly"}/>
-            <RevenueChart label={"daily"}/>
+            <RevenueChart label={"monthly"} />
+            <RevenueChart label={"weekly"} />
+            <RevenueChart label={"daily"} />
           </div>
         </div>
       </div>

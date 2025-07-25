@@ -44,7 +44,6 @@ const LoginPage = () => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
     const errors = {};
     if (!formData.email) errors.email = "Email is required";
     if (!formData.password) errors.password = "Password is required";

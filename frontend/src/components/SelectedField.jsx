@@ -10,14 +10,16 @@ export const SelectField = ({ label, name, value, onChange, options }) => (
         onChange={onChange}
         className="w-full px-4 py-3 text-sm sm:text-base rounded-lg bg-zinc-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition duration-200 ease-in-out appearance-none"
       >
-        {options.map((opt) => (
-          <option key={opt} value={opt} className="bg-zinc-800 text-white">
-            {opt}
-          </option>
-        ))}
+        {options.map((opt, i) => {
+          const val = typeof opt === "string" ? opt : opt.value;
+          const label = typeof opt === "string" ? opt : opt.label;
+          return (
+            <option key={val + i} value={val} className="bg-zinc-800 text-white">
+              {label}
+            </option>
+          );
+        })}
       </select>
-
-      {/* Optional dropdown arrow styling (purely visual, works on most browsers) */}
       <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
         <svg
           className="w-4 h-4 text-gray-300"

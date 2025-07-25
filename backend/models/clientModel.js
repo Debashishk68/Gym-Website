@@ -16,6 +16,11 @@ const clientSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+   fathersname: {
+    type: String,
+    required: true,
+    trim: true
+  },
   profilePic:{
     type: String,
     default: ''
@@ -35,7 +40,7 @@ const clientSchema = new mongoose.Schema({
   plan: {
     type: String,
     required: true,
-    enum: ['Basic', 'Standard', 'Premium'] // Add more plans if needed
+
   },
   planPrice: {
     type: Number,

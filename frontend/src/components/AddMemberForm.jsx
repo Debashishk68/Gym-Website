@@ -3,9 +3,6 @@ import {
   FaUser,
   FaPhone,
   FaEnvelope,
-  FaCalendarAlt,
-  FaMapMarkedAlt,
-  FaNotesMedical,
 } from "react-icons/fa";
 import sushilGhimire from "../assets/sushil-ghimire.jpg";
 import Navbar from "./NavBar";
@@ -13,34 +10,48 @@ import { SelectField } from "./SelectedField";
 import { useAddMember } from "../hooks/useAddMember";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { useGetPlans } from "../hooks/useGetplans";
 
-const planPrices = {
-  Basic: 500,
-  Standard: 1000,
-  Gold: 1500,
-  Platinum: 2000,
-};
-
-const AddMemberForm = ({ onAdd }) => {
+const AddMemberForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
+    fathersname: "",
     age: "",
     gender: "Male",
     address: "",
-    membershipType: "Basic",
-    startDate: new Date().toISOString().split("T")[0], // Format: "YYYY-MM-DD"
+    membershipType: "",
+    startDate: new Date().toISOString().split("T")[0],
     endDate: "",
     emergencyContact: "",
     status: "Active",
     notes: "",
     profileImage: null,
   });
-  const { mutate: AddMember, isSuccess , isError, error,isPending } = useAddMember();
+
+  const {
+    mutate: AddMember,
+    isSuccess,
+    isError,
+    error,
+    isPending,
+  } = useAddMember();
+
+  const { data, isSuccess: plansSuccess } = useGetPlans();
+  const [plans, setPlans] = useState([]);
   const [errors, setErrors] = useState({});
   const [imagePreview, setImagePreview] = useState(null);
   const navigate = useNavigate();
+  
+  const defaultPlaceholder =
+    "https://ui-avatars.com/api/?name=New+Member&background=1a1a1a&color=ffc107&rounded=true";
+
+  const selectedPlan = plans.find(
+    (plan) => plan.name === formData.membershipType
+  );
+  const planPrice = selectedPlan?.durations?.[0]?.price;
+  const planDuration = selectedPlan?.durations?.[0]?.months;
 
   useEffect(() => {
     return () => {
@@ -49,14 +60,26 @@ const AddMemberForm = ({ onAdd }) => {
   }, [imagePreview]);
 
   useEffect(() => {
-    if (isSuccess ) {
-      toast.success("Sucessfully Member Added");
-      navigate('/members')
+    if (plansSuccess) {
+      setPlans(data.plans);
+      if (!formData.membershipType && data.plans.length > 0) {
+        setFormData((prev) => ({
+          ...prev,
+          membershipType: data.plans[0].name,
+        }));
+      }
+    }
+  }, [plansSuccess, data]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("Successfully added member");
+      navigate("/members");
     }
     if (isError) {
-      toast.error(`Error ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     }
-  }, [isSuccess , isError]);
+  }, [isSuccess, isError]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -84,20 +107,11 @@ const AddMemberForm = ({ onAdd }) => {
     e.preventDefault();
     if (!validate()) return;
 
-    const memberData = {
-      ...formData,
-      membershipPrice: planPrices[formData.membershipType],
-    };
-
     AddMember({
       formData,
-      membershipPrice: planPrices[formData.membershipType],
+      membershipPrice: planPrice,
     });
-
-    if (onAdd) onAdd(memberData);
   };
-
-  const selectedPrice = planPrices[formData.membershipType];
 
   return (
     <div
@@ -115,7 +129,7 @@ const AddMemberForm = ({ onAdd }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Image Upload */}
           <div className="flex justify-center">
-            <label className="cursor-pointer">
+            <label className="cursor-pointer text-center">
               <input
                 type="file"
                 accept="image/*"
@@ -124,8 +138,8 @@ const AddMemberForm = ({ onAdd }) => {
                 className="hidden"
               />
               <img
-                src={imagePreview || "https://via.placeholder.com/120"}
-                alt="Preview"
+                src={imagePreview || defaultPlaceholder}
+                alt="Profile Preview"
                 className="w-28 h-28 rounded-full object-cover border-2 border-yellow-400 shadow-lg"
               />
               <p className="text-center text-sm text-yellow-300 mt-2">
@@ -134,6 +148,7 @@ const AddMemberForm = ({ onAdd }) => {
             </label>
           </div>
 
+          {/* Form Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField
               label="Full Name"
@@ -152,6 +167,14 @@ const AddMemberForm = ({ onAdd }) => {
               error={errors.email}
               icon={<FaEnvelope />}
               placeholder="john@example.com"
+            />
+            <InputField
+              label="Father's Name"
+              name="fathersname"
+              value={formData.fathersname}
+              onChange={handleChange}
+              icon={<FaUser />}
+              placeholder="Mr. Smith"
             />
             <InputField
               label="Phone"
@@ -183,38 +206,11 @@ const AddMemberForm = ({ onAdd }) => {
               name="membershipType"
               value={formData.membershipType}
               onChange={handleChange}
-              options={Object.keys(planPrices)}
+              options={plans.map((plan) => ({
+                value: plan.name,
+                label: plan.name,
+              }))}
             />
-          </div>
-
-          {/* Price Info */}
-          <p className="text-sm text-yellow-300 mt-2">
-            💳 Plan Price: ₹{selectedPrice} / month
-          </p>
-
-          {/* Future date fields (optional) */}
-          {/* 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <InputField
-              label="Start Date"
-              name="startDate"
-              type="date"
-              value={formData.startDate}
-              onChange={handleChange}
-              icon={<FaCalendarAlt />}
-            />
-            <InputField
-              label="End Date"
-              name="endDate"
-              type="date"
-              value={formData.endDate}
-              onChange={handleChange}
-              icon={<FaCalendarAlt />}
-            />
-          </div>
-          */}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField
               label="Emergency Contact"
               name="emergencyContact"
@@ -232,29 +228,39 @@ const AddMemberForm = ({ onAdd }) => {
             />
           </div>
 
-          <div>
-            <label className="block mb-1 text-sm">Address</label>
-            <textarea
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="123 Street, City, State"
-              className="w-full p-3 rounded-lg bg-zinc-800 border border-gray-600 text-white"
-            />
-            {errors.address && (
-              <p className="text-red-400 text-sm">{errors.address}</p>
-            )}
-          </div>
+          {/* Plan Price */}
+          {selectedPlan && (
+            <p className="text-sm text-yellow-300 mt-2 md:ml-1">
+              💳 Plan Price: ₹{planPrice} for {planDuration} {planDuration>1?"Months":"Month"}
+            </p>
+          )}
 
-          <div>
-            <label className="block mb-1 text-sm">Notes</label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              placeholder="Optional notes (e.g., injury, diet)"
-              className="w-full p-3 rounded-lg bg-zinc-800 border border-gray-600 text-white"
-            />
+          {/* Address & Notes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block mb-1 text-sm">Address</label>
+              <textarea
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                placeholder="123 Street, City, State"
+                className="w-full p-3 rounded-lg bg-zinc-800 border border-gray-600 text-white"
+              />
+              {errors.address && (
+                <p className="text-red-400 text-sm">{errors.address}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block mb-1 text-sm">Notes</label>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                placeholder="Optional notes (e.g., injury, diet)"
+                className="w-full p-3 rounded-lg bg-zinc-800 border border-gray-600 text-white"
+              />
+            </div>
           </div>
 
           <button
@@ -262,7 +268,7 @@ const AddMemberForm = ({ onAdd }) => {
             disabled={isPending}
             className="w-full mt-4 bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-3 rounded-lg transition"
           >
-            {isPending?'Adding...':'Add Member'}
+            {isPending ? "Adding..." : "Add Member"}
           </button>
         </form>
       </div>
@@ -270,7 +276,7 @@ const AddMemberForm = ({ onAdd }) => {
   );
 };
 
-// InputField Component
+// Reusable InputField Component
 const InputField = ({
   label,
   name,

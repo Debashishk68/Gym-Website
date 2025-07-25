@@ -11,7 +11,7 @@ const MemberCard = ({ member }) => {
      className="bg-zinc-900 border border-yellow-500/30 hover:border-yellow-400 transition-all p-5 rounded-xl shadow-lg space-y-3">
       <h3 className="text-xl font-semibold text-yellow-300">{member.fullname}</h3>
       <p className="text-sm text-gray-300">📧 {member.email}</p>
-      <p className="text-sm text-gray-300">📞 {member.phone} 7979711309</p>
+      <p className="text-sm text-gray-300">📞 {member.phone}</p>
       <div className="pt-2">
         <span
           className={`inline-flex items-center gap-1 text-sm px-3 py-1 rounded-full font-medium ${
