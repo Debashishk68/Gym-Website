@@ -9,6 +9,14 @@ import RevenueTrends from "./pages/private/Stats";
 import EditMemberForm from "./pages/private/EditPage";
 import Logout from "./pages/auth/Logout";
 import Invoices from "./pages/private/Invoices";
+import ClientJoinTrends from "./pages/private/ClientJoinTrends";
+import DietPlan from "./pages/private/DietPlan";
+import AddSupplement from "./pages/private/AddSuppliment";
+import SellSupplement from "./pages/private/SellSuppliment";
+import SupplementStock from "./pages/private/Stock";
+import EditSupplement from "./pages/private/EditRoute";
+import PageNotFound from "./pages/PageNotFound";
+// import NotLoggedIn from "./pages/NotLogin";
 
 const App = () => {
   return (
@@ -21,10 +29,16 @@ const App = () => {
       <Route path="/generate-certificate" element={<GenerateCertificate />} />
       <Route path="/stats" element={<RevenueTrends />} />
       <Route path="/edit-profile/:id" element={<EditMemberForm />} />
-      {/* <Route path="/invoices" elememt={<h1>invoices</h1>}/> */}
-            <Route path="/invoices" element={<Invoices />} />
+      <Route path="/invoices" element={<Invoices />} />
+      <Route path="/student-trends" element={<ClientJoinTrends />} />
+      <Route path="/diet-plans" element={<DietPlan />} />
+      <Route path="/add-supplement" element={<AddSupplement />} />
+      <Route path="/sell-supplement" element={<SellSupplement />} />
+      <Route path="/stock" element={<SupplementStock />} />
+      <Route path="/edit/:id" element={<EditSupplement />} />
+      {/* <Route path="/not-login" element={<NotLoggedIn />} /> */}
 
-            <Route path="*" element={<h1>Page not found</h1>} />
+      <Route path="*" element={<PageNotFound />} />
 
       <Route path="/logout" element={<Logout />} />
     </Routes>

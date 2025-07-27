@@ -1,9 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { RevenueChartApi } from "../apis/RevenueChart";
+import { ClientTrendsApi, RevenueChartApi } from "../apis/RevenueChart";
 
 export const useRevenueChart = () => {
   return useQuery({
     queryKey: ["Revenue"], 
     queryFn:RevenueChartApi,
+  });
+};
+export const useCLientTrends = () => {
+  return useQuery({
+    queryKey: ["Trends"], 
+    queryFn:ClientTrendsApi,
   });
 };

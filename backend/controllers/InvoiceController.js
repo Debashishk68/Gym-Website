@@ -28,7 +28,6 @@ const generateInvoicePdf = async (req, res) => {
     const invoiceData = await invoiceModel
       .findById(invoice._id)
       .populate("memberId"); 
-    console.log(invoiceData.memberId.address)
 
     const htmlContent = `
       <html>
@@ -51,8 +50,8 @@ const generateInvoicePdf = async (req, res) => {
           </div>
 
           <div class="info">
-            <p><strong>From:</strong> Iron Core Fitness Center<br>
-               123 Iron Street, Muscle Area, Jamshedpur, 831001, India</p>
+            <p><strong>From:</strong> AB Fitness Gym <br>
+               Joraphatak Road, Dhanbad, Jharkhand, 826001, India</p>
 
             <p><strong>To:</strong> ${invoice.name}<br>
                ${invoiceData.memberId.address || "Not Provided"},
@@ -62,7 +61,7 @@ const generateInvoicePdf = async (req, res) => {
             <p><strong>Invoice ID:</strong> ${
               invoice._id?.slice(0, 8).toUpperCase() || "IN2434345"
             }</p>
-            <p><strong>Date:</strong> ${formattedDate}</p>
+            <p><strong>Date of admission:</strong> ${formattedDate}</p>
           </div>
 
           <table>

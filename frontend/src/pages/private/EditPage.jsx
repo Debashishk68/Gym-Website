@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { FaUser, FaPhone, FaEnvelope } from "react-icons/fa";
+import { FaUser, FaPhone, FaEnvelope, FaTrashAlt } from "react-icons/fa";
 import sushilGhimire from "../../assets/sushil-ghimire.jpg";
 import Navbar from "../../components/NavBar";
 import { SelectField } from "../../components/SelectedField";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMembersInfo } from "../../hooks/useDashboard";
-import { useEditMember } from "../../hooks/useAddMember";
+import { useDeleteMember, useEditMember } from "../../hooks/useAddMember";
 import { useGetPlans } from "../../hooks/useGetplans";
 
 const EditMemberForm = () => {
   const { id } = useParams();
   const { data: memberData, isLoading: loadingMember } = useMembersInfo(id);
   const { data: plansData, isSuccess: plansSuccess } = useGetPlans();
+  const { mutate: deleteMember, isPending: isDeleting } = useDeleteMember();
   const { mutate: editMember, isSuccess, isPending } = useEditMember();
   const navigate = useNavigate();
 
@@ -64,15 +65,15 @@ const EditMemberForm = () => {
         status: c.status || "Active",
         notes: c.notes || "",
         profileImage: c.profilePic || "",
-        planEndDate: c.planEndDate || "",
+        planEndDate: c.membershipDeadline || "",
       });
 
       if (c.profilePic) setImagePreview(c.profilePic);
-
-      if (c.planEndDate) {
+     
+      if (c.membershipDeadline) {
         const today = new Date();
-        const endDate = new Date(c.planEndDate);
-        setIsExpired(endDate < today);
+        const endDate = new Date(c.membershipDeadline);
+        setIsExpired(endDate <= today);
       }
     }
   }, [memberData, plans]);
@@ -84,6 +85,7 @@ const EditMemberForm = () => {
       navigate("/members");
     }
   }, [isSuccess]);
+  
 
   const selectedPlan = plans.find((p) => p.name === formData.membershipType);
   const planPrice = selectedPlan?.durations?.[0]?.price || 0;
@@ -116,7 +118,8 @@ const EditMemberForm = () => {
     editMember({ id, data: formData, planPrice, renewPlan });
   };
 
-  if (loadingMember) return <p className="text-white text-center mt-10">Loading...</p>;
+  if (loadingMember)
+    return <p className="text-white text-center mt-10">Loading...</p>;
 
   return (
     <div
@@ -126,9 +129,28 @@ const EditMemberForm = () => {
       <Navbar />
       <ToastContainer position="top-right" />
       <div className="max-w-5xl mt-4 mx-auto bg-black/70 backdrop-blur-md text-white p-10 rounded-2xl shadow-2xl">
-        <h2 className="text-4xl font-bold text-yellow-400 mb-10 text-center tracking-wide">
-          ✨ Edit Member Profile
-        </h2>
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-10">
+          <h2 className="text-3xl sm:text-4xl font-bold text-yellow-400 tracking-wide mb-4 sm:mb-0">
+            ✨ Edit Member Profile
+          </h2>
+
+          <button
+            type="button"
+            onClick={() => {
+              const confirmed = window.confirm(
+                "Are you sure you want to delete this member?"
+              );
+              if (confirmed) {
+                deleteMember(id, { onSuccess: () => navigate("/members") });
+              }
+            }}
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition text-sm sm:text-base"
+          >
+            <FaTrashAlt className="text-lg" />
+            {isDeleting ? "Deleting" : "Delete Member"}
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Profile Image */}
           <div className="flex justify-center">
@@ -145,7 +167,9 @@ const EditMemberForm = () => {
                 alt="Preview"
                 className="w-32 h-32 rounded-full object-cover border-4 border-yellow-400 shadow-lg hover:scale-105 transition-transform"
               />
-              <p className="text-sm text-yellow-300 mt-2 underline">Change Photo</p>
+              <p className="text-sm text-yellow-300 mt-2 underline">
+                Change Photo
+              </p>
             </label>
           </div>
 
@@ -218,14 +242,16 @@ const EditMemberForm = () => {
             {formData.planEndDate && (
               <p className="mt-1">
                 🗓️ Plan Ends:{" "}
-                <span className={isExpired ? "text-red-400" : "text-green-400 font-semibold"}>
+                <span
+                  className={
+                    isExpired ? "text-red-400" : "text-green-400 font-semibold"
+                  }
+                >
                   {new Date(formData.planEndDate).toLocaleDateString()}
                 </span>
               </p>
             )}
           </div>
-
-         
 
           {/* Emergency Contact & Status */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -263,7 +289,7 @@ const EditMemberForm = () => {
             placeholder="Optional notes (e.g., injury, diet)"
           />
 
-           {/* Renew Plan Checkbox */}
+          {/* Renew Plan Checkbox */}
           {isExpired && (
             <div className="flex items-center mt-4 space-x-3">
               <input
@@ -304,7 +330,9 @@ const InputField = ({
   type = "text",
 }) => (
   <div>
-    <label className="block text-sm font-medium mb-1 text-yellow-300">{label}</label>
+    <label className="block text-sm font-medium mb-1 text-yellow-300">
+      {label}
+    </label>
     <div className="flex items-center gap-2 bg-zinc-800 border border-gray-600 rounded-lg px-3 focus-within:ring-2 ring-yellow-400">
       {icon && <span className="text-yellow-400">{icon}</span>}
       <input
@@ -330,7 +358,9 @@ const TextareaField = ({
   placeholder,
 }) => (
   <div>
-    <label className="block mb-1 text-sm font-medium text-yellow-300">{label}</label>
+    <label className="block mb-1 text-sm font-medium text-yellow-300">
+      {label}
+    </label>
     <textarea
       name={name}
       value={value}

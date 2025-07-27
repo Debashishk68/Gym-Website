@@ -96,8 +96,8 @@ const generateId = async ({
 
   const svgBuffer = Buffer.from(svgOverlay);
 
-  const outputDir = path.join(__dirname, "..", "ids");
-  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+  // const outputDir = path.join(__dirname, "..", "ids");
+  // if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
   // const outputPath = path.join(
   //   outputDir,

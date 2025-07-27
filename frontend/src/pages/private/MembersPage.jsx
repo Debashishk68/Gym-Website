@@ -6,6 +6,7 @@ import SectionHeader from "../../components/SectionHeader";
 import { useMembers } from "../../hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
 import LoaderBar from "../../components/Loader";
+import NotLoggedIn from "../../components/NotLogin";
 
 const MembersPage = () => {
   const [members, setMembers] = useState([]);
@@ -19,7 +20,9 @@ const MembersPage = () => {
       setMembers(data.clients);
     }
   }, [isSuccess, data]);
-
+ if (isError && error.message === "Login failed") {
+    return <NotLoggedIn />;
+  }
   const filtered = members.filter((m) => {
     const nameMatch = m.fullname
       ?.toLowerCase()

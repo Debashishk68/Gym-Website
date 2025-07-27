@@ -77,4 +77,23 @@ export const EditMember = async ({ id, data, planPrice,renewPlan }) => {
   }
 };
 
+export const deleteMember = async (id) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/dashboard/delete/${id}`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to delete member");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error deleting member:", error);
+    throw error;
+  }
+};
 

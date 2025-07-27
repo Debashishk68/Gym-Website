@@ -38,7 +38,6 @@ const RevenueChart = ({ label = "monthly" }) => {
       setMonthly(data.revenueByMonth);
       setWeekly(data.revenueByWeek);
       setDaily(data.dailyRevenue);
-      console.log(data);
     }
   }, [isSuccess]);
   const monthLabels = Object.keys(monthly);

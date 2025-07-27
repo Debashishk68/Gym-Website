@@ -11,6 +11,7 @@ import { useAddMember } from "../hooks/useAddMember";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useGetPlans } from "../hooks/useGetplans";
+import NotLoggedIn from "./NotLogin";
 
 const AddMemberForm = () => {
   const [formData, setFormData] = useState({
@@ -80,6 +81,10 @@ const AddMemberForm = () => {
       toast.error(`Error: ${error.message}`);
     }
   }, [isSuccess, isError]);
+
+   if (isError && error.message === "Login failed") {
+    return <NotLoggedIn />;
+  }
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;

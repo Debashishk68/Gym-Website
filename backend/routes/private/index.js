@@ -1,6 +1,6 @@
 const express = require('express');
 const isLoggedIn  = require('../../middlewares/isLoggedIn');
-const { addClient, dashboard, members, membersInfo, revenueChart, editClient, addPlan, getPlans, deleteClient } = require('../../controllers/userController');
+const { addClient, dashboard, members, membersInfo, revenueChart, editClient, addPlan, getPlans, deleteClient, clientJoinChart } = require('../../controllers/userController');
 const upload = require('../../middlewares/upload');
 const { generateCertificateHandler } = require('../../controllers/certificateController');
 const { getInvoices, generateInvoicePdf } = require('../../controllers/InvoiceController');
@@ -18,6 +18,7 @@ router.get('/revenue-chart',isLoggedIn,revenueChart);
 router.get('/get-invoices',isLoggedIn,getInvoices)
 
 router.post('/invoice-generate',isLoggedIn,generateInvoicePdf);
+router.get('/getclient-trends',isLoggedIn,clientJoinChart)
 router.post('/delete/:id',isLoggedIn,deleteClient)
 
 

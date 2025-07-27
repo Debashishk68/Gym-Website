@@ -2,6 +2,7 @@ const Client = require("../models/clientModel");
 const invoiceModel = require("../models/invoiceModel");
 const planModel = require("../models/planModel");
 const mongoose = require("mongoose");
+const getPublicIdFromUrl = require("../utils/genPublicId");
 const cloudinary = require("cloudinary").v2;
 
 const addClient = async (req, res) => {
@@ -47,7 +48,7 @@ const addClient = async (req, res) => {
       membershipDeadline.setMonth(membershipDeadline.getMonth() + 6);
     } else if (plan.trim().toLowerCase() === "standard") {
       membershipDeadline.setMonth(membershipDeadline.getMonth() + 3);
-    } else if (plan.trim().toLowerCase() === "base") {
+    } else if (plan.trim().toLowerCase() === "basic") {
       membershipDeadline.setMonth(membershipDeadline.getMonth() + 1);
     } else {
       console.error("Invalid plan selected");
@@ -91,10 +92,10 @@ const addClient = async (req, res) => {
 
     await newClient.save();
 
-    const memberId = await Client.findOne({email})
+    const memberId = await Client.findOne({ email });
 
     const newInvoice = new invoiceModel({
-      memberId:memberId._id,
+      memberId: memberId._id,
       name: fullname,
       amount: planPrice,
       date: Date.now(),
@@ -134,44 +135,23 @@ const editClient = async (req, res) => {
       renewPlan,
     } = req.body;
 
-    // Validate required fields
-    if (
-      !fullname ||
-      !email ||
-      !phone ||
-      !age ||
-      !fathersname ||
-      !gender ||
-      !plan ||
-      !planPrice ||
-      !emergencyContact ||
-      !status ||
-      !address
-    ) {
+    // Check for required fields
+    const requiredFields = [
+      fullname, email, phone, fathersname, age, gender,
+      plan, planPrice, emergencyContact, status, address
+    ];
+
+    if (requiredFields.some(field => field === undefined || field === null || field === '')) {
       return res.status(400).json({ message: "All fields are required" });
     }
-    const startDate = new Date();
-    const membershipDeadline = new Date(startDate);
 
-    if (plan.trim().toLowerCase() === "platinum") {
-      membershipDeadline.setMonth(membershipDeadline.getMonth() + 12);
-    } else if (plan.trim().toLowerCase() === "gold") {
-      membershipDeadline.setMonth(membershipDeadline.getMonth() + 6);
-    } else if (plan.trim().toLowerCase() === "standard") {
-      membershipDeadline.setMonth(membershipDeadline.getMonth() + 3);
-    } else if (plan.trim().toLowerCase() === "base") {
-      membershipDeadline.setMonth(membershipDeadline.getMonth() + 1);
-    } else {
-      console.error("Invalid plan selected");
-    }
-
-    // Find client
+    // Find existing client
     const client = await Client.findById(id);
     if (!client) {
       return res.status(404).json({ message: "Client not found" });
     }
 
-    // If email or phone is changed, check for duplicate
+    // Check for duplicate email or phone (excluding current client)
     if (client.email !== email || client.phone !== phone) {
       const existingClient = await Client.findOne({
         $or: [{ email }, { phone }],
@@ -185,26 +165,60 @@ const editClient = async (req, res) => {
       }
     }
 
-    // Handle profile image (optional)
-    if (req.file) {
-      client.profilePic = req.file.path; // Uploaded via multer + cloudinary
+    // Update profile picture if uploaded
+    if (req.file?.path) {
+      client.profilePic = req.file.path;
     }
 
-    // Update fields
+    // Update all client fields
     client.fullname = fullname;
     client.email = email;
     client.phone = phone;
     client.age = age;
     client.fathersname = fathersname;
     client.gender = gender;
-    client.plan = plan;
-    client.planPrice = planPrice;
     client.emergencyContact = emergencyContact;
     client.status = status;
     client.address = address;
     client.notes = notes;
-    if (renewPlan) {
+
+    // Handle plan renewal if applicable
+    if (renewPlan === true || renewPlan === "true") {
+      const planLower = plan.trim().toLowerCase();
+      const startDate = new Date();
+      const membershipDeadline = new Date(startDate);
+
+      switch (planLower) {
+        case "platinum":
+          membershipDeadline.setMonth(startDate.getMonth() + 12);
+          break;
+        case "gold":
+          membershipDeadline.setMonth(startDate.getMonth() + 6);
+          break;
+        case "standard":
+          membershipDeadline.setMonth(startDate.getMonth() + 3);
+          break;
+        case "basic":
+          membershipDeadline.setMonth(startDate.getMonth() + 1);
+          break;
+        default:
+          return res.status(400).json({ message: "Invalid plan selected" });
+      }
+
+      client.plan = plan;
+      client.planPrice = planPrice;
       client.membershipDeadline = membershipDeadline;
+
+      // Create invoice
+      const newInvoice = new invoiceModel({
+        memberId: client._id,
+        name: fullname,
+        amount: planPrice,
+        date: Date.now(),
+        status: status,
+        whatsappNumber: phone,
+      });
+      await newInvoice.save();
     }
 
     await client.save();
@@ -213,11 +227,10 @@ const editClient = async (req, res) => {
       message: "Client updated successfully",
       client,
     });
+
   } catch (error) {
     console.error("Error updating client:", error);
-    return res
-      .status(500)
-      .json({ message: "Server error while updating client" });
+    return res.status(500).json({ message: "Server error while updating client" });
   }
 };
 const members = async (req, res) => {
@@ -464,7 +477,10 @@ const deleteClient = async (req, res) => {
 
     // Delete image from Cloudinary
     if (client.profilePic) {
-      await cloudinary.uploader.destroy(client.profilePic);
+      const publicId = getPublicIdFromUrl(client.profilePic);
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId);
+      }
     }
 
     // Delete client from DB
@@ -473,7 +489,131 @@ const deleteClient = async (req, res) => {
     return res.status(200).json({ message: "Client deleted successfully" });
   } catch (error) {
     console.error("Error deleting client:", error);
-    return res.status(500).json({ message: "Server error while deleting client" });
+    return res
+      .status(500)
+      .json({ message: "Server error while deleting client" });
+  }
+};
+
+const clientJoinChart = async (req, res) => {
+  try {
+    // Monthly Joins
+    const monthlyJoins = await Client.aggregate([
+      {
+        $addFields: {
+          monthNum: { $month: "$createdAt" },
+        },
+      },
+      {
+        $group: {
+          _id: "$monthNum",
+          totalJoins: { $sum: 1 },
+        },
+      },
+      {
+        $addFields: {
+          monthName: {
+            $arrayElemAt: [
+              [
+                "",
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec",
+              ],
+              "$_id",
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          month: "$monthName",
+          totalJoins: 1,
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    // Weekly Joins
+    const weeklyJoins = await Client.aggregate([
+      {
+        $addFields: {
+          dayOfMonth: { $dayOfMonth: "$createdAt" },
+        },
+      },
+      {
+        $addFields: {
+          week: {
+            $concat: [
+              "Week ",
+              {
+                $toString: {
+                  $ceil: { $divide: ["$dayOfMonth", 7] },
+                },
+              },
+            ],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$week",
+          totalJoins: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    // Daily Joins
+    const dailyJoins = await Client.aggregate([
+      {
+        $addFields: {
+          date: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$date",
+          totalJoins: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    // Format the data
+    const joinsByMonth = {};
+    monthlyJoins.forEach(({ month, totalJoins }) => {
+      joinsByMonth[month] = totalJoins;
+    });
+
+    const joinsByWeek = {};
+    weeklyJoins.forEach(({ _id, totalJoins }) => {
+      joinsByWeek[_id] = totalJoins;
+    });
+
+    // This is sent as array directly, no need to format
+    res.send({ joinsByMonth, joinsByWeek, dailyJoins });
+  } catch (error) {
+    console.error("Client Join Error:", error);
+    res.status(500).json({ message: "Error calculating client join trends." });
   }
 };
 
@@ -486,5 +626,6 @@ module.exports = {
   editClient,
   addPlan,
   getPlans,
-  deleteClient
+  deleteClient,
+  clientJoinChart,
 };

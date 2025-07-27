@@ -6,7 +6,8 @@ const authRouter = require("./routes/auth/index");
 const dashboardRouter = require("./routes/private/index")
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const certificateRoutes = require("./routes/private/certificate")
+const certificateRoutes = require("./routes/private/certificate");
+const supplement = require("./routes/private/suppliment")
 const path = require("path");
 dotenv.config();
 require("./corn/deleteOldClients");
@@ -32,9 +33,10 @@ app.use("/auth", authRouter);
 
 app.use("/dashboard", dashboardRouter);
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/certificate", certificateRoutes);
-app.use("/certificates", express.static(path.join(__dirname, "certificates"))); // serve generated files
+// app.use("/certificates", express.static(path.join(__dirname, "certificates")));
+app.use('/suppliment',supplement)
 
 
 // Start the server
