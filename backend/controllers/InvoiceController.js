@@ -5,6 +5,7 @@ const puppeteer = require("puppeteer");
 const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
 const convertToWords = require("../utils/convertToWords");
+const chromium = require("chrome-aws-lambda");
 const saleModel = require("../models/sale");
 const supplimentModel = require("../models/supplimentModel");
 
@@ -23,13 +24,14 @@ const getInvoices = async (req, res) => {
 const generateInvoicePdf = async (req, res) => {
   try {
     const invoice = req.body;
-    
 
     const formattedDate = new Date(invoice.date).toLocaleDateString("en-IN");
 
-   const logoData = await fetch('https://res.cloudinary.com/dn5z4mi3i/image/upload/v1754045509/Gym-Logo_zu78uv.png')
-  .then(res => res.arrayBuffer())
-  .then(buffer => Buffer.from(buffer).toString("base64"));
+    const logoData = await fetch(
+      "https://res.cloudinary.com/dn5z4mi3i/image/upload/v1754045509/Gym-Logo_zu78uv.png"
+    )
+      .then((res) => res.arrayBuffer())
+      .then((buffer) => Buffer.from(buffer).toString("base64"));
 
     const invoiceData = await invoiceModel
       .findById(invoice._id)
@@ -167,7 +169,12 @@ const generateInvoicePdf = async (req, res) => {
     `;
 
     // Generate PDF with Puppeteer
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
+    });
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
     const buffer = await page.pdf({ format: "A4", printBackground: true });
