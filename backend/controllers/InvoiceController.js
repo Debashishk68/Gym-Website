@@ -1,7 +1,6 @@
 const invoiceModel = require("../models/invoiceModel");
-const fs = require("fs");
-const path = require("path");
-const puppeteer = require("puppeteer");
+const chromium = require("chrome-aws-lambda");
+const puppeteer = require("puppeteer-core");
 const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
 const convertToWords = require("../utils/convertToWords");
@@ -23,13 +22,14 @@ const getInvoices = async (req, res) => {
 const generateInvoicePdf = async (req, res) => {
   try {
     const invoice = req.body;
-    
 
     const formattedDate = new Date(invoice.date).toLocaleDateString("en-IN");
 
-   const logoData = await fetch('https://res.cloudinary.com/dn5z4mi3i/image/upload/v1754045509/Gym-Logo_zu78uv.png')
-  .then(res => res.arrayBuffer())
-  .then(buffer => Buffer.from(buffer).toString("base64"));
+    const logoData = await fetch(
+      "https://res.cloudinary.com/dn5z4mi3i/image/upload/v1754045509/Gym-Logo_zu78uv.png"
+    )
+      .then((res) => res.arrayBuffer())
+      .then((buffer) => Buffer.from(buffer).toString("base64"));
 
     const invoiceData = await invoiceModel
       .findById(invoice._id)
@@ -221,9 +221,11 @@ const generateSupplementInvoicePdf = async (req, res) => {
     const formattedDate = new Date(sale.date || Date.now()).toLocaleDateString(
       "en-IN"
     );
-      const logoData = await fetch('https://res.cloudinary.com/dn5z4mi3i/image/upload/v1754045510/Logo_xzlyug.png')
-  .then(res => res.arrayBuffer())
-  .then(buffer => Buffer.from(buffer).toString("base64"));
+    const logoData = await fetch(
+      "https://res.cloudinary.com/dn5z4mi3i/image/upload/v1754045510/Logo_xzlyug.png"
+    )
+      .then((res) => res.arrayBuffer())
+      .then((buffer) => Buffer.from(buffer).toString("base64"));
 
     const mrp = sale.mrp || suppliment.price || 0;
     const discountPercent = sale.discountPercent || 0;
@@ -454,7 +456,11 @@ const generateSupplementInvoicePdf = async (req, res) => {
     `;
 
     // Generate PDF using Puppeteer
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
+    });
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
     const buffer = await page.pdf({ format: "A4", printBackground: true });
