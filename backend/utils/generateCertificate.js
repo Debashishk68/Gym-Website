@@ -86,7 +86,7 @@ const generateId = async ({
         .bold { font-weight: bold; }
       </style>
       <text x="900" y="600" text-anchor="middle" class="bold" font-size="90">${name}</text>
-      <text x="930" y="1010" font-size="80" >${fatherName}</text>
+      <text x="930" y="1010" font-size="80" >${fatherName} abchghgh</text>
       <text x="700" y="1156" font-size="80">${gender}</text>
       <text x="930" y="1315" font-size="80">${mobile}</text>
       <text x="700" y="1460" font-size="80">${address}</text>
