@@ -27,8 +27,9 @@ const generateInvoicePdf = async (req, res) => {
 
     const formattedDate = new Date(invoice.date).toLocaleDateString("en-IN");
 
-    const logoPath = path.join(__dirname, "../assets/Gym-Logo.png");
-    const logoData = fs.readFileSync(logoPath).toString("base64");
+   const logoData = await fetch('https://res.cloudinary.com/dn5z4mi3i/image/upload/v1754045509/Gym-Logo_zu78uv.png')
+  .then(res => res.arrayBuffer())
+  .then(buffer => Buffer.from(buffer).toString("base64"));
 
     const invoiceData = await invoiceModel
       .findById(invoice._id)
