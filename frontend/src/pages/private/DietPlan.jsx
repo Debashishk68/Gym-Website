@@ -4,22 +4,22 @@ import Navbar from "../../components/NavBar.jsx";
 const dietData = [
   {
     image:
-      "https://res.cloudinary.com/docvtawpy/image/upload/v1753516703/diet_chart_p62t5q.jpg",
+      "https://res.cloudinary.com/dn5z4mi3i/image/upload/v1754045040/diet_chart_atnq3z.jpg",
     title: "Morning Meal",
   },
   {
     image:
-      "https://res.cloudinary.com/docvtawpy/image/upload/v1753516701/diet_czkk9r.jpg",
+      "https://res.cloudinary.com/dn5z4mi3i/image/upload/v1754045040/diet_tsunno.jpg",
     title: "Post-Workout",
   },
   {
     image:
-      "https://res.cloudinary.com/docvtawpy/image/upload/v1753516698/weight-gain_ur2kil.jpg",
+      "https://res.cloudinary.com/dn5z4mi3i/image/upload/v1754045036/weight-gain_ms3ujs.jpg",
     title: "Lunch Plan",
   },
   {
     image:
-      "https://res.cloudinary.com/docvtawpy/image/upload/v1753516708/dietplan_jrzmfx.jpg",
+      "https://res.cloudinary.com/dn5z4mi3i/image/upload/v1754045040/dietplan_sbkif0.jpg",
     title: "Dinner Plan",
   },
 ];
