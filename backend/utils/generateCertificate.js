@@ -48,6 +48,13 @@ const generateId = async ({
   profileImagePath, // Cloudinary URL
 }) => {
   const baseImagePath = path.join(__dirname, "templates", "ID.png");
+  const fontPath = path.join(__dirname, "fonts", "Tinos-Regular.ttf");
+
+  if (!fs.existsSync(fontPath)) {
+    throw new Error("Font file not found.");
+  }
+  const fontData = fs.readFileSync(fontPath);
+  const fontBase64 = fontData.toString("base64");
 
   if (!fs.existsSync(baseImagePath)) {
     throw new Error("ID template not found.");
@@ -70,7 +77,9 @@ const generateId = async ({
     .composite([
       {
         input: Buffer.from(
-          `<svg><circle cx="325" cy="325" r="325" fill="white"/></svg>`
+          `<svg width="650" height="650">
+             <circle cx="325" cy="325" r="325" fill="white"/>
+           </svg>`
         ),
         blend: "dest-in",
       },
@@ -78,41 +87,53 @@ const generateId = async ({
     .png()
     .toBuffer();
 
-  // SVG text overlay
+  // SVG text overlay with embedded font
   const svgOverlay = `
-    <svg width="1600" height="3000">
-      <style>
-        .field { font-family: "Arial", sans-serif; fill: #000; font-size: 26px; }
-        .bold { font-weight: bold; }
-      </style>
-      <text x="900" y="600" text-anchor="middle" class="bold" font-size="90">${name}</text>
-      <text x="930" y="1010" font-size="80" >${fatherName}</text>
-      <text x="700" y="1156" font-size="80">${gender}</text>
-      <text x="930" y="1315" font-size="80">${mobile}</text>
-      <text x="700" y="1460" font-size="80">${address}</text>
-      <text x="730" y="2150" font-size="80" fill="#FFFFFF">${emergencyContact}</text>
+    <svg width="1600" height="3000" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <style type="text/css">
+          @font-face {
+            font-family: 'CustomFont';
+            src: url('data:font/truetype;charset=utf-8;base64,${fontBase64}') format('truetype');
+          }
+          .field {
+            font-family: 'CustomFont';
+            fill: #000;
+            font-size: 80px;
+          }
+          .bold {
+            font-family: 'CustomFont';
+            font-weight: bold;
+            font-size: 90px;
+          }
+        </style>
+      </defs>
+
+      <text x="900" y="600" text-anchor="middle" class="bold">${name}</text>
+      <text x="930" y="1010" class="field">${fatherName}</text>
+      <text x="700" y="1156" class="field">${gender}</text>
+      <text x="930" y="1315" class="field">${mobile}</text>
+      <text x="700" y="1460" class="field">${address}</text>
+      <text x="730" y="2150" font-family="CustomFont" font-size="80" fill="#FFFFFF">${emergencyContact}</text>
     </svg>
   `;
 
   const svgBuffer = Buffer.from(svgOverlay);
 
-  // const outputDir = path.join(__dirname, "..", "ids");
-  // if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
-
-  // const outputPath = path.join(
-  //   outputDir,
-  //   `${id.replace(/\s/g, "_")}_id_card.png`
-  // );
-
+  // Combine base image + profile image + text overlay
   const finalBuffer = await sharp(baseImagePath)
     .composite([
-      { input: profileCircle, left: 650, top: 730 }, // Adjust if needed
-      { input: svgBuffer, top: 900, left: 0 },
+      { input: profileCircle, left: 650, top: 730 },
+      { input: svgBuffer, left: 0, top: 0 },
     ])
     .png()
     .toBuffer();
 
   return finalBuffer;
+
+  // Optional: Save to file if needed
+  // const outputPath = path.join(__dirname, "..", "ids", `${id.replace(/\s/g, "_")}_id_card.png`);
+  // await sharp(finalBuffer).toFile(outputPath);
 };
 
 module.exports = { generateCertificate, generateId };
