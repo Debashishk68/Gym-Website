@@ -1,5 +1,5 @@
 const invoiceModel = require("../models/invoiceModel");
-const chromium = require("chrome-aws-lambda");
+const chromium = require("@sparticuz/chromium");
 const puppeteer = require("puppeteer-core");
 const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");

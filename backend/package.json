@@ -11,10 +11,10 @@
     "dev": "nodemon app.js"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^138.0.2",
     "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
-    "chrome-aws-lambda": "^10.1.0",
     "config": "^4.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
