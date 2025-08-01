@@ -3,15 +3,14 @@ const cors = require("cors");
 const { connectMongoDb } = require("./config/connection");
 const dotenv = require("dotenv");
 const authRouter = require("./routes/auth/index");
-const dashboardRouter = require("./routes/private/index")
+const dashboardRouter = require("./routes/private/index");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const certificateRoutes = require("./routes/private/certificate");
-const supplement = require("./routes/private/suppliment")
+const supplement = require("./routes/private/suppliment");
 const path = require("path");
 dotenv.config();
 require("./corn/deleteOldClients");
-
 
 connectMongoDb(process.env.MONGODB);
 const app = express();
@@ -19,7 +18,7 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const corsOptions = {
-  origin:"https://gym-website-7q5t.vercel.app/", // Frontend URL
+  origin: "https://gym-website-7q5t.vercel.app/", // Frontend URL
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -29,7 +28,7 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
-app.get("/",(req, res) => {
+app.get("/", (req, res) => {
   res.send("Welcome to the backend server");
 });
 
@@ -40,8 +39,7 @@ app.use("/dashboard", dashboardRouter);
 // app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/certificate", certificateRoutes);
 // app.use("/certificates", express.static(path.join(__dirname, "certificates")));
-app.use('/suppliment',supplement)
-
+app.use("/suppliment", supplement);
 
 // Start the server
 app.listen(3000, () => {
