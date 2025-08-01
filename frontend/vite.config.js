@@ -8,4 +8,7 @@ export default defineConfig({
   server: {
     historyApiFallback: true, // <== allows SPA routing
   },
+  resolve: {
+  extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
+}
 });
