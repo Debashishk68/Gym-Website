@@ -42,6 +42,26 @@ export const GetAllSupplements = async () => {
   }
 };
 
+export const GetSellingSupplementsData = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/suppliment/data/selling`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to fetch selling supplements");
+    }
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
 export const getSupplementById = async ({ id }) => {
   try {
     const response = await fetch(`${API_BASE_URL}/suppliment/${id}`, {
@@ -127,3 +147,22 @@ export const sellSupplement = async (saleData) => {
     throw error;
   }
 };
+
+export const generateSupplementInvoicePdf = async (saleId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/suppliment/sell-supplement-pdf/${saleId}`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to generate invoice PDF");
+    }
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}

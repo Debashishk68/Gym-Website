@@ -7,6 +7,8 @@ import {
   FaIndustry,
   FaEdit,
   FaTrash,
+  FaPlus,
+  FaShoppingCart,
 } from "react-icons/fa";
 import {
   useDeleteSupppliment,
@@ -14,6 +16,7 @@ import {
 } from "../../hooks/useSuppliment";
 import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
+import SupplementsNavbar from "../../components/SupplimentNavbar";
 
 const Cart = () => {
   const {
@@ -64,21 +67,12 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
-      <Navbar />
+      <SupplementsNavbar />
       <ToastContainer position="top-right" />
       <div className="max-w-6xl mx-auto px-6 py-12">
         <h1 className="text-4xl font-bold text-yellow-400 mb-10 text-center tracking-widest">
           🛒 Supplement Stock Overview
         </h1>
-
-        <div className="text-right mb-6">
-          <Link
-            to="/add-supplement"
-            className="inline-block bg-yellow-400 text-black font-semibold px-6 py-2 rounded hover:bg-yellow-500 transition-all duration-200"
-          >
-            Add Supplement
-          </Link>
-        </div>
 
         {/* Loading */}
         {isLoading && (

@@ -7,11 +7,11 @@ import {
   FaBalanceScale,
   FaBuilding,
 } from "react-icons/fa";
-import Navbar from "../../components/NavBar";
 import "react-toastify/dist/ReactToastify.css";
 import bgImage from "../../assets/sushil-ghimire.jpg";
 import { useAddSuppliment } from "../../hooks/useSuppliment";
 import NotLoggedIn from "../../components/NotLogin";
+import SupplementsNavbar from "../../components/SupplimentNavbar";
 
 const AddSupplement = () => {
   const [formData, setFormData] = useState({
@@ -66,7 +66,7 @@ const AddSupplement = () => {
       className="min-h-screen bg-cover bg-center"
       style={{ backgroundImage: `url(${bgImage})` }}
     >
-      <Navbar />
+      <SupplementsNavbar />
       <ToastContainer position="top-right" />
       <div className="max-w-4xl mx-auto mt-6 bg-black/80 backdrop-blur-md text-white p-8 rounded-xl shadow-xl">
         <h2 className="text-3xl font-bold text-yellow-400 mb-8 text-center">

@@ -1,5 +1,6 @@
 const Supplement = require("../models/supplimentModel");
-const SupplementSale = require("../models/sale")
+const SupplementSale = require("../models/sale");
+const { generateSupplementInvoicePdf } = require("./InvoiceController");
 
 const addSuppliment = async (req, res) => {
   try {
@@ -49,10 +50,10 @@ const getAllSupplements = async (req, res) => {
 };
 
 const getSupplementById = async (req, res) => {
-  const { id } = req.params; 
+  const { id } = req.params;
 
   try {
-    const supplement = await Supplement.findById(id); 
+    const supplement = await Supplement.findById(id);
 
     if (!supplement) {
       return res.status(404).json({
@@ -82,7 +83,9 @@ const deleteSupplement = async (req, res) => {
     const deleted = await Supplement.findByIdAndDelete(id);
 
     if (!deleted) {
-      return res.status(404).json({ success: false, message: "Supplement not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Supplement not found" });
     }
 
     res.status(200).json({
@@ -92,7 +95,11 @@ const deleteSupplement = async (req, res) => {
     });
   } catch (error) {
     console.error("Delete error:", error);
-    res.status(500).json({ success: false, message: "Failed to delete supplement", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete supplement",
+      error: error.message,
+    });
   }
 };
 
@@ -107,7 +114,9 @@ const updateSupplement = async (req, res) => {
     });
 
     if (!updated) {
-      return res.status(404).json({ success: false, message: "Supplement not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Supplement not found" });
     }
 
     res.status(200).json({
@@ -117,10 +126,31 @@ const updateSupplement = async (req, res) => {
     });
   } catch (error) {
     console.error("Update error:", error);
-    res.status(500).json({ success: false, message: "Failed to update supplement", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to update supplement",
+      error: error.message,
+    });
   }
 };
 
+const sellingData = async (req, res) => {
+  try {
+    const sales = await SupplementSale.find({})
+      .sort({ createdAt: -1 })
+      .select(
+        "customerName mobileNumber supplementName quantity total invoicePdf createdAt"
+      ); // select only necessary fields for performance
+
+    return res.status(200).json(sales);
+  } catch (error) {
+    console.error("Error fetching supplement sales:", error);
+    return res.status(500).json({
+      message: "Failed to fetch sales data",
+      error: error.message,
+    });
+  }
+};
 const sellSupplement = async (req, res) => {
   try {
     const {
@@ -133,41 +163,86 @@ const sellSupplement = async (req, res) => {
       supplementId,
       quantity,
       paymentMode,
+      amountPaid, 
+      mrp, // ✅ from frontend
+      discountPercent = 0, // ✅ default to 0
     } = req.body;
-    
 
+    // Validate required fields
+    if (
+      !customerName ||
+      !mobileNumber ||
+      !supplementId ||
+      !quantity ||
+      !paymentMode ||
+      !mrp
+    ) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Fetch supplement
     const supplement = await Supplement.findById(supplementId);
-
     if (!supplement) {
       return res.status(404).json({ message: "Supplement not found" });
     }
 
+    // Check stock
     if (supplement.stock < quantity) {
-      return res.status(400).json({ message: "Insufficient stock available" });
+      return res.status(400).json({
+        message: `Only ${supplement.stock} items left in stock`,
+      });
     }
+
+    // Price calculations
+    const discountPerUnit = (mrp * discountPercent) / 100;
+    const unitPrice = mrp - discountPerUnit;
+    const total = unitPrice * quantity;
+    const totalDiscount = discountPerUnit * quantity;
+    const amountDue = total - amountPaid; 
 
     // Reduce stock
     supplement.stock -= quantity;
     await supplement.save();
 
+    // Save sale record
     const sale = new SupplementSale({
       customerName,
       mobileNumber,
-      emailAddress:email,
-      weightKg:weight,
+      emailAddress: email,
+      weightKg: weight,
       company,
       supplementName,
       supplementId,
       quantity,
-      modeOfPayment:paymentMode,
+      modeOfPayment: paymentMode,
+      mrp,
+      discountPercent,
+      unitPrice,
+      amountPaid,
+      total,
+      amountDue,
+      totalDiscount,
     });
 
     await sale.save();
 
-    res.status(201).json({ message: "Supplement sold successfully", data: sale });
+   
+    return res.status(201).json({
+      message: "Supplement sold successfully",
+      data: sale,
+    });
   } catch (error) {
-    console.error("Sell Error:", error);
-    res.status(500).json({ message: "Failed to sell supplement", error: error.message });
+    console.error("Sell Supplement Error:", error);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };
-module.exports = { addSuppliment , getAllSupplements, deleteSupplement,updateSupplement,getSupplementById,sellSupplement};
+
+module.exports = {
+  addSuppliment,
+  getAllSupplements,
+  deleteSupplement,
+  updateSupplement,
+  getSupplementById,
+  sellSupplement,
+  sellingData,
+};

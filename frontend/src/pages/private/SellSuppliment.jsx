@@ -1,15 +1,18 @@
-import React, { useState, useMemo } from "react";
-import Navbar from "../../components/NavBar";
-import { toast } from "react-toastify";
+import React, { useState, useMemo, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
 import {
   useGetAllSuppliments,
   useSellSupppliment,
 } from "../../hooks/useSuppliment";
+import SupplementsNavbar from "../../components/SupplimentNavbar";
 
 const SellSupplement = () => {
-  const { data: supplementsData, isSuccess, isLoading, isError } =
-    useGetAllSuppliments();
-
+  const {
+    data: supplementsData,
+    isSuccess,
+    isLoading,
+    isError,
+  } = useGetAllSuppliments();
   const { mutate: sellSupplement, isPending } = useSellSupppliment();
 
   const [formData, setFormData] = useState({
@@ -21,18 +24,36 @@ const SellSupplement = () => {
     weight: "",
     company: "",
     paymentMode: "",
+    discountPercent: "",
   });
+
+  const selectedSupplement = useMemo(() => {
+    if (!isSuccess) return null;
+    return supplementsData?.data.find((s) => s.name === formData.supplement);
+  }, [formData.supplement, supplementsData, isSuccess]);
+
+  useEffect(() => {
+    if (selectedSupplement) {
+      setFormData((prev) => ({
+        ...prev,
+        company: selectedSupplement.company || "",
+      }));
+    }
+  
+  }, [selectedSupplement]);
+
+  // Pricing calculations
+  const mrp = selectedSupplement?.price || 0;
+  const discount = parseFloat(formData.discountPercent) || 0;
+  const quantity = parseInt(formData.quantity) || 0;
+  const discountAmount = (mrp * discount) / 100;
+  const unitPrice = mrp - discountAmount;
+  const total = unitPrice * quantity;
+  const totalDiscount = discountAmount * quantity;
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
-
-  const selectedSupplement = useMemo(() => {
-    if (!isSuccess) return null;
-    return supplementsData.data.find(
-      (s) => s.name === formData.supplement
-    );
-  }, [formData.supplement, supplementsData, isSuccess]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -42,7 +63,7 @@ const SellSupplement = () => {
       return;
     }
 
-    if (+formData.quantity > selectedSupplement.stock) {
+    if (quantity > selectedSupplement.stock) {
       toast.error("Quantity exceeds available stock!");
       return;
     }
@@ -55,12 +76,18 @@ const SellSupplement = () => {
       company: formData.company,
       supplementName: formData.supplement,
       supplementId: selectedSupplement._id,
-      quantity: +formData.quantity,
+      quantity,
+      amountPaid: formData.amountPaid,
       paymentMode: formData.paymentMode,
+      mrp,
+      discountPercent: discount,
+      unitPrice,
+      total,
+      totalDiscount,
     };
 
     sellSupplement(payload, {
-      onSuccess: () => {
+      onSuccess: (data) => {
         toast.success("Supplement sold successfully!");
         setFormData({
           name: "",
@@ -68,9 +95,11 @@ const SellSupplement = () => {
           email: "",
           supplement: "",
           quantity: "",
+          amountPaid: "",
           weight: "",
           company: "",
           paymentMode: "",
+          discountPercent: "",
         });
       },
       onError: (error) => {
@@ -89,7 +118,9 @@ const SellSupplement = () => {
 
   return (
     <>
-      <Navbar />
+      <SupplementsNavbar />
+      <ToastContainer position="top-right" />
+
       <div className="min-h-screen bg-black text-white px-4 md:px-20 py-10">
         <h1 className="text-3xl md:text-4xl font-bold mb-10 text-center text-[#fdc700]">
           Sell Supplement
@@ -99,16 +130,17 @@ const SellSupplement = () => {
           onSubmit={handleSubmit}
           className="max-w-3xl mx-auto bg-zinc-900 rounded-2xl shadow-xl p-8 space-y-6"
         >
-          {/* Text Inputs */}
+          {/* Basic Inputs */}
           {[
             { label: "Customer Name", name: "name", type: "text" },
             { label: "Mobile Number", name: "mobile", type: "text" },
             { label: "Email Address", name: "email", type: "email" },
             { label: "Weight (kg)", name: "weight", type: "text" },
-            { label: "Company", name: "company", type: "text" },
           ].map(({ label, name, type }) => (
             <div key={name}>
-              <label className="block text-sm mb-1 text-gray-300">{label}</label>
+              <label className="block text-sm mb-1 text-gray-300">
+                {label}
+              </label>
               <input
                 type={type}
                 name={name}
@@ -122,7 +154,9 @@ const SellSupplement = () => {
 
           {/* Supplement Dropdown */}
           <div>
-            <label className="block text-sm mb-1 text-gray-300">Supplement Name</label>
+            <label className="block text-sm mb-1 text-gray-300">
+              Supplement Name
+            </label>
             <select
               name="supplement"
               value={formData.supplement}
@@ -142,12 +176,56 @@ const SellSupplement = () => {
             </select>
 
             {selectedSupplement && (
-              <p className="text-sm text-gray-400 mt-1">
-                Available stock:{" "}
-                <span className="text-yellow-400">{selectedSupplement.stock}</span>
-              </p>
+              <div className="text-sm text-gray-400 mt-2 space-y-1">
+                <p>
+                  <span className="text-gray-300">Price (MRP):</span> ₹{" "}
+                  {mrp.toFixed(2)}
+                </p>
+                <p>
+                  <span className="text-gray-300">Available Stock:</span>{" "}
+                  <span className="text-yellow-400">
+                    {selectedSupplement.stock}
+                  </span>
+                </p>
+              </div>
             )}
           </div>
+
+          {/* Discount Input */}
+          <div>
+            <label className="block text-sm mb-1 text-gray-300">
+              Discount (%)
+            </label>
+            <input
+              type="number"
+              name="discountPercent"
+              value={formData.discountPercent}
+              onChange={handleChange}
+              min="0"
+              max="100"
+              className="w-full px-4 py-3 bg-zinc-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            />
+          </div>
+
+          {/* Price Summary */}
+          {selectedSupplement && formData.quantity && (
+            <div className="bg-zinc-800 p-4 rounded-md border border-gray-600">
+              <p className="text-sm">
+                <span className="text-gray-300">
+                  Unit Price after Discount:
+                </span>{" "}
+                ₹ {unitPrice.toFixed(2)}
+              </p>
+              <p className="text-sm">
+                <span className="text-gray-300">Total Discount:</span> ₹{" "}
+                {totalDiscount.toFixed(2)}
+              </p>
+              <p className="text-sm">
+                <span className="text-gray-300">Total Amount:</span> ₹{" "}
+                {total.toFixed(2)}
+              </p>
+            </div>
+          )}
 
           {/* Quantity Input */}
           <div>
@@ -164,9 +242,46 @@ const SellSupplement = () => {
             />
           </div>
 
+          {/* Amount paid */}
+          <div>
+            <label className="block text-sm mb-1 text-gray-300">
+              Amount Paid
+            </label>
+            <input
+              type="number"
+              name="amountPaid"
+              value={formData.amountPaid}
+              onChange={handleChange}
+              required
+              min={0}
+              className="w-full px-4 py-3 bg-zinc-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            />
+
+            {/* Show warning if amountPaid > total */}
+            {/* {formData.amountPaid && parseFloat(formData.amountPaid+) > total && (
+              <p className="text-sm text-red-400 mt-1">
+                Amount paid cannot be more than total ₹{total?.toFixed(2)}
+              </p>
+            )} */}
+          </div>
+
+          {/* Auto-Populated Company */}
+          <div>
+            <label className="block text-sm mb-1 text-gray-300">Company</label>
+            <input
+              type="text"
+              name="company"
+              value={formData.company}
+              readOnly
+              className="w-full px-4 py-3 bg-zinc-700 text-gray-400 border border-gray-600 rounded-lg"
+            />
+          </div>
+
           {/* Payment Mode */}
           <div>
-            <label className="block text-sm mb-1 text-gray-300">Mode of Payment</label>
+            <label className="block text-sm mb-1 text-gray-300">
+              Mode of Payment
+            </label>
             <select
               name="paymentMode"
               value={formData.paymentMode}

@@ -3,7 +3,9 @@ import {
   AddSupplement,
   DeleteSupplement,
   EditSupplement,
+  generateSupplementInvoicePdf,
   GetAllSupplements,
+  GetSellingSupplementsData,
   getSupplementById,
   sellSupplement,
 } from "../apis/Supplement";
@@ -12,6 +14,12 @@ export const useGetAllSuppliments = () => {
   return useQuery({
     queryKey: ["getAllsuppliments"],
     queryFn: GetAllSupplements,
+  });
+};
+export const useGetSellingSupplimentsData = () => {
+  return useQuery({
+    queryKey: ["getSellingSupplimentsData"],
+    queryFn: GetSellingSupplementsData,
   });
 };
 
@@ -43,6 +51,12 @@ export const useDeleteSupppliment = () => {
     mutationKey: ["deleteSupplement"],
   });
 };
+export const useGenerateSellSuppplimentpdf = () => {
+  return useMutation({
+    mutationFn:generateSupplementInvoicePdf,
+    mutationKey: ["generate-invoice"],
+  });
+}
 export const useSellSupppliment = () => {
   return useMutation({
     mutationFn:sellSupplement,

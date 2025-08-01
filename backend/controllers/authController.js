@@ -1,4 +1,5 @@
 const userModel = require("../models/userModel");
+const OTP = require("../models/otpModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -28,17 +29,14 @@ async function login(req, res) {
       expiresIn: "1h",
     });
 
-    res
-      .cookie("token", token, { httpOnly: true })
-      .status(200)
-      .json({
-        message: "Login successful",
-        isAuthenticated: true,
-        role: user.role,
-        userId: user._id,
-        name: user.name,
-        profilepic: user.profilepic,
-      });
+    res.cookie("token", token, { httpOnly: true }).status(200).json({
+      message: "Login successful",
+      isAuthenticated: true,
+      role: user.role,
+      userId: user._id,
+      name: user.name,
+      profilepic: user.profilepic,
+    });
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -47,9 +45,9 @@ async function login(req, res) {
 
 async function register(req, res) {
   try {
-    let { firstName, lastName, email, password,role } = req.body;
+    let { firstName, lastName, email, password, role } = req.body;
 
-    if (!email || !password || !firstName || !lastName ) {
+    if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
@@ -64,10 +62,10 @@ async function register(req, res) {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     await userModel.create({
-      name: firstName +" " + lastName,
+      name: firstName + " " + lastName,
       email,
       password: hashedPassword,
-      role: role
+      role: role,
     });
 
     res.status(201).json({ message: "User registered successfully" });
@@ -77,6 +75,28 @@ async function register(req, res) {
   }
 }
 
+const resetPassword = async (req, res) => {
+  const { token, password } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.RESET_SECRET);
+    const email = decoded.email;
+
+    const user = await userModel.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    await OTP.deleteOne({ email }); 
+
+    return res.status(200).json({ message: "Password reset successful" });
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+};
+
 function logout(req, res) {
   res
     .clearCookie("token")
@@ -84,4 +104,4 @@ function logout(req, res) {
     .json({ message: "Successfully logged out" });
 }
 
-module.exports = { login, register, logout };
+module.exports = { login, register, logout ,resetPassword };

@@ -16,6 +16,10 @@ import SellSupplement from "./pages/private/SellSuppliment";
 import SupplementStock from "./pages/private/Stock";
 import EditSupplement from "./pages/private/EditRoute";
 import PageNotFound from "./pages/PageNotFound";
+import SupplementInvoice from "./pages/private/SupplimentInvoice";
+import ForgotPasswordPage from "./pages/auth/ForgotPassword";
+import VerifyOtpPage from "./pages/auth/VerifyOtp";
+import ResetPasswordPage from "./pages/auth/ResetPassword";
 // import NotLoggedIn from "./pages/NotLogin";
 
 const App = () => {
@@ -34,6 +38,10 @@ const App = () => {
       <Route path="/diet-plans" element={<DietPlan />} />
       <Route path="/add-supplement" element={<AddSupplement />} />
       <Route path="/sell-supplement" element={<SellSupplement />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/verify-otp" element={<VerifyOtpPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/sell-invoice" element={<SupplementInvoice />} />
       <Route path="/stock" element={<SupplementStock />} />
       <Route path="/edit/:id" element={<EditSupplement />} />
       {/* <Route path="/not-login" element={<NotLoggedIn />} /> */}

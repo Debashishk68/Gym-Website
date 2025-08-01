@@ -36,7 +36,6 @@ export const AddMember = async (data) => {
 };
 
 export const EditMember = async ({ id, data, planPrice,renewPlan }) => {
-  console.log(data)
   const formData = new FormData();
   formData.append("fullname", data.name);
   formData.append("email", data.email);

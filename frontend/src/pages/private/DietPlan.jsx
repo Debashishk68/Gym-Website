@@ -80,13 +80,8 @@ const DietPlan = () => {
 
       {/* Footer */}
       <footer className="mt-20 text-center text-gray-400 text-sm py-8 border-t border-[#2c3f34]">
-        <div className="flex justify-center gap-6 mb-3 flex-wrap">
-          <span className="hover:text-green-300 cursor-pointer">About</span>
-          <span className="hover:text-green-300 cursor-pointer">Contact</span>
-          <span className="hover:text-green-300 cursor-pointer">Privacy Policy</span>
-          <span className="hover:text-green-300 cursor-pointer">Terms of Service</span>
-        </div>
-        <p className="text-xs text-gray-500">©2024 FitLife. All rights reserved.</p>
+        
+        <p className="text-xs text-gray-500">©2024 Ab fitness gym. All rights reserved.</p>
       </footer>
     </div>
   );

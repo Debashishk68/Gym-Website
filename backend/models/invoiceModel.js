@@ -32,6 +32,10 @@ const invoiceSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    invoicepdf: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );
