@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import AppHeader from "../../components/AppHeader";
-import TextInput from "../../components/TextInput";
+import AppHeader from "../../components/AppHeader.jsx";
+import TextInput from "../../components/TextInput.jsx";
 import sushilghimire from "../../assets/sushil-ghimire.jpg";
-import { useLogin } from "../../hooks/useAuth"; // your custom mutation hook
+import { useLogin } from "../../hooks/useAuth.js"; // your custom mutation hook
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom"; 
 

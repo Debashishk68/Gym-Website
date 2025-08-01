@@ -9,9 +9,9 @@ import {
 } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import bgImage from "../../assets/sushil-ghimire.jpg";
-import { useAddSuppliment } from "../../hooks/useSuppliment";
-import NotLoggedIn from "../../components/NotLogin";
-import SupplementsNavbar from "../../components/SupplimentNavbar";
+import { useAddSuppliment } from "../../hooks/useSuppliment.js";
+import NotLoggedIn from "../../components/NotLogin.jsx";
+import SupplementsNavbar from "../../components/SupplimentNavbar.jsx";
 
 const AddSupplement = () => {
   const [formData, setFormData] = useState({

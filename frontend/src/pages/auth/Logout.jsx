@@ -1,7 +1,7 @@
 // src/pages/Logout.jsx
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLogout } from "../../hooks/useAuth";
+import { useLogout } from "../../hooks/useAuth.js";
 
 const Logout = () => {
   const { mutate: logout, isSuccess } = useLogout();

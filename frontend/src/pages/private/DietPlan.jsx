@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Navbar from "../../components/NavBar";
+import Navbar from "../../components/NavBar.jsx";
 
 const dietData = [
   {

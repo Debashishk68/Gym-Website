@@ -3,8 +3,8 @@ import { toast, ToastContainer } from "react-toastify";
 import {
   useGetAllSuppliments,
   useSellSupppliment,
-} from "../../hooks/useSuppliment";
-import SupplementsNavbar from "../../components/SupplimentNavbar";
+} from "../../hooks/useSuppliment.js";
+import SupplementsNavbar from "../../components/SupplimentNavbar.jsx";
 
 const SellSupplement = () => {
   const {

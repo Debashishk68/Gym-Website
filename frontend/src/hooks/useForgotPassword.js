@@ -1,4 +1,4 @@
-import { ChangePassApi, sendOtpApi, verifyOtpApi } from "../apis/ForgotPassword"
+import { ChangePassApi, sendOtpApi, verifyOtpApi } from "../apis/ForgotPassword.js"
 import { useMutation } from "@tanstack/react-query"
 
 

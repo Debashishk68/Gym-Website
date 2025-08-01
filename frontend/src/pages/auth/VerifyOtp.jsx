@@ -1,11 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import TextInput from "../../components/TextInput";
-import AppHeader from "../../components/AppHeader";
-import { use } from "react";
+import TextInput from "../../components/TextInput.jsx";
+import AppHeader from "../../components/AppHeader.jsx";
 import { useEffect } from "react";
-import { useVerifyOtp } from "../../hooks/useForgotPassword";
+import { useVerifyOtp } from "../../hooks/useForgotPassword.js";
 
 const VerifyOtpPage = () => {
   const { state } = useLocation();

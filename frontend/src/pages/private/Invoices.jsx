@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import Navbar from "../../components/NavBar";
+import Navbar from "../../components/NavBar.jsx";
 import { FaWhatsapp } from "react-icons/fa";
 import { IoMdRefresh } from "react-icons/io";
-import { useGenInvoice, useGetInvoice } from "../../hooks/useInvoice";
+import { useGenInvoice, useGetInvoice } from "../../hooks/useInvoice.js";
 import { useNavigate } from "react-router-dom";
 import { FiSearch } from "react-icons/fi";
 

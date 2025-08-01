@@ -11,9 +11,9 @@ import {
 } from "react-icons/hi";
 
 import Navbar from "../../components/NavBar";
-import Loading from "../../components/Loader";
-import { useMembersInfo } from "../../hooks/useDashboard";
-import { useIdCard } from "../../hooks/useCertificate";
+import Loading from "../../components/Loader.jsx";
+import { useMembersInfo } from "../../hooks/useDashboard.js";
+import { useIdCard } from "../../hooks/useCertificate.js";
 
 dayjs.extend(relativeTime);
 

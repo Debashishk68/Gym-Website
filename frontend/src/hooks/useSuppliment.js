@@ -8,7 +8,7 @@ import {
   GetSellingSupplementsData,
   getSupplementById,
   sellSupplement,
-} from "../apis/Supplement";
+} from "../apis/Supplement.js";
 
 export const useGetAllSuppliments = () => {
   return useQuery({

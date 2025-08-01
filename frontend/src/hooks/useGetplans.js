@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { plansApi } from "../apis/PlansApi"
+import { plansApi } from "../apis/PlansApi.js"
 
 export const useGetPlans =()=>{
     return useQuery({

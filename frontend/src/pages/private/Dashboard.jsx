@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../../components/NavBar";
-import StatCard from "../../components/StatCard";
-import SearchBar from "../../components/SearchBar";
-import RevenueChart from "../../components/RevenueChart";
-import SectionHeader from "../../components/SectionHeader";
+import Navbar from "../../components/NavBar.jsx";
+import StatCard from "../../components/StatCard.jsx";
+import RevenueChart from "../../components/RevenueChart.jsx";
+import SectionHeader from "../../components/SectionHeader.jsx";
 import thumbnail from "../../assets/Thumbnail.svg"; // capital T ✅
 import { FaUserAlt, FaRupeeSign } from "react-icons/fa";
-import { useDashboard } from "../../hooks/useDashboard";
-import LoaderBar from "../../components/Loader";
-import NotLoggedIn from "../../components/NotLogin";
+import { useDashboard } from "../../hooks/useDashboard.js";
+import LoaderBar from "../../components/Loader.jsx";
+import NotLoggedIn from "../../components/NotLogin.jsx";
 import { Link } from "react-router-dom";
 
 const DashboardPage = () => {

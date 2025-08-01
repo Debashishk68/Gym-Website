@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../../components/NavBar";
 import {
   FaBoxes,
   FaWeight,
@@ -13,10 +12,10 @@ import {
 import {
   useDeleteSupppliment,
   useGetAllSuppliments,
-} from "../../hooks/useSuppliment";
+} from "../../hooks/useSuppliment.js";
 import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import SupplementsNavbar from "../../components/SupplimentNavbar";
+import SupplementsNavbar from "../../components/SupplimentNavbar.jsx";
 
 const Cart = () => {
   const {

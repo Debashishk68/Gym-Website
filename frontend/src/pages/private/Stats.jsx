@@ -10,8 +10,8 @@ import {
   Legend,
   Filler,
 } from "chart.js";
-import Navbar from "../../components/NavBar";
-import { useRevenueChart } from "../../hooks/useRevenueChart"; // adjust path
+import Navbar from "../../components/NavBar.jsx";
+import { useRevenueChart } from "../../hooks/useRevenueChart.js"; // adjust path
 import { useNavigate } from "react-router-dom";
 
 ChartJS.register(

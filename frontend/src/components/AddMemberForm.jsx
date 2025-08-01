@@ -5,13 +5,13 @@ import {
   FaEnvelope,
 } from "react-icons/fa";
 import sushilGhimire from "../assets/sushil-ghimire.jpg";
-import Navbar from "./NavBar";
-import { SelectField } from "./SelectedField";
-import { useAddMember } from "../hooks/useAddMember";
+import Navbar from "./NavBar.jsx";
+import { SelectField } from "./SelectedField.jsx";
+import { useAddMember } from "../hooks/useAddMember.js";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { useGetPlans } from "../hooks/useGetplans";
-import NotLoggedIn from "./NotLogin";
+import { useGetPlans } from "../hooks/useGetplans.js";
+import NotLoggedIn from "./NotLogin.jsx";
 
 const AddMemberForm = () => {
   const [formData, setFormData] = useState({

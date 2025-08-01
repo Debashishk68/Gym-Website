@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { GenerateInvoice, getInvoices } from "../apis/Invoice"
+import { GenerateInvoice, getInvoices } from "../apis/Invoice.js"
 
 export const useGetInvoice =()=>{
     return useQuery({

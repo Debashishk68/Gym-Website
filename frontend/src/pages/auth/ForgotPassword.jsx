@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import AppHeader from "../../components/AppHeader";
-import TextInput from "../../components/TextInput";
-import { useSendOtp } from "../../hooks/useForgotPassword";
+import AppHeader from "../../components/AppHeader.jsx";
+import TextInput from "../../components/TextInput.jsx";
+import { useSendOtp } from "../../hooks/useForgotPassword.js";
 import { useNavigate } from "react-router-dom";
 
 const ForgotPasswordPage = () => {

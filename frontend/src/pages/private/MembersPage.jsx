@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../../components/NavBar";
-import SearchBar from "../../components/SearchBar";
-import MemberCard from "../../components/MemberCard";
-import SectionHeader from "../../components/SectionHeader";
-import { useMembers } from "../../hooks/useDashboard";
+import Navbar from "../../components/NavBar.jsx";
+import SearchBar from "../../components/SearchBar.jsx";
+import MemberCard from "../../components/MemberCard.jsx";
+import SectionHeader from "../../components/SectionHeader.jsx";
+import { useMembers } from "../../hooks/useDashboard.js";
 import { useNavigate } from "react-router-dom";
-import LoaderBar from "../../components/Loader";
-import NotLoggedIn from "../../components/NotLogin";
+import LoaderBar from "../../components/Loader.jsx";
+import NotLoggedIn from "../../components/NotLogin.jsx";
 
 const MembersPage = () => {
   const [members, setMembers] = useState([]);

@@ -1,10 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import TextInput from "../../components/TextInput";
-import AppHeader from "../../components/AppHeader";
+import TextInput from "../../components/TextInput.jsx";
+import AppHeader from "../../components/AppHeader.jsx";
 import { useEffect } from "react";
-import { useResetPass } from "../../hooks/useForgotPassword";
+import { useResetPass } from "../../hooks/useForgotPassword.js";
 
 const ResetPasswordPage = () => {
   const { state } = useLocation();

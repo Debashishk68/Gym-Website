@@ -10,9 +10,9 @@ import {
   Legend,
   Filler,
 } from "chart.js";
-import Navbar from "../../components/NavBar";
-import { useCLientTrends } from "../../hooks/useRevenueChart";
-import NotLoggedIn from "../../components/NotLogin";
+import Navbar from "../../components/NavBar.jsx";
+import { useCLientTrends } from "../../hooks/useRevenueChart.js";
+import NotLoggedIn from "../../components/NotLogin.jsx";
 
 ChartJS.register(
   CategoryScale,

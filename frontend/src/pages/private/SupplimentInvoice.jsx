@@ -5,8 +5,8 @@ import { FiSearch } from "react-icons/fi";
 import {
   useGenerateSellSuppplimentpdf,
   useGetSellingSupplimentsData,
-} from "../../hooks/useSuppliment";
-import SupplementsNavbar from "../../components/SupplimentNavbar";
+} from "../../hooks/useSuppliment.js";
+import SupplementsNavbar from "../../components/SupplimentNavbar.jsx";
 
 const SupplementInvoice = () => {
   const { data, isLoading, isError, error, refetch, isFetching } =

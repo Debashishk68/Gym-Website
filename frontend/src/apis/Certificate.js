@@ -1,4 +1,4 @@
-import API_BASE_URL from "../config/api";
+import API_BASE_URL from "../config/api.js";
 
 export const certificateApi = async (data) => {
   const { name, course, date, weightcategory, weightlift, place } = data;

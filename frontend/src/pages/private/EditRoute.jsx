@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useEditSuppliment, useGetSupplimentId } from "../../hooks/useSuppliment";
+import { useEditSuppliment, useGetSupplimentId } from "../../hooks/useSuppliment.js";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import LoaderBar from "../../components/Loader";
+
 
 const EditSupplement = () => {
   const { id } = useParams();

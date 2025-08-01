@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { FaUser, FaPhone, FaEnvelope, FaTrashAlt } from "react-icons/fa";
 import sushilGhimire from "../../assets/sushil-ghimire.jpg";
-import Navbar from "../../components/NavBar";
-import { SelectField } from "../../components/SelectedField";
+import Navbar from "../../components/NavBar.jsx";
+import { SelectField } from "../../components/SelectedField.jsx";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
-import { useMembersInfo } from "../../hooks/useDashboard";
-import { useDeleteMember, useEditMember } from "../../hooks/useAddMember";
-import { useGetPlans } from "../../hooks/useGetplans";
+import { useMembersInfo } from "../../hooks/useDashboard.js";
+import { useDeleteMember, useEditMember } from "../../hooks/useAddMember.js";
+import { useGetPlans } from "../../hooks/useGetplans.js";
 
 const EditMemberForm = () => {
   const { id } = useParams();

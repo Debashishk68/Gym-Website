@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "../../components/NavBar";
-import { useMembers } from "../../hooks/useDashboard";
+import Navbar from "../../components/NavBar.jsx";
+import { useMembers } from "../../hooks/useDashboard.js";
 import { useNavigate } from "react-router-dom";
-import useCertificate from "../../hooks/useCertificate";
+import useCertificate from "../../hooks/useCertificate.js";
 
 const GenerateCertificate = () => {
   const [members, setMembers] = useState([]);

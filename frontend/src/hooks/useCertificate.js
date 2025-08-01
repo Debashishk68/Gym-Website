@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { certificateApi, IdCard } from "../apis/Certificate";
+import { certificateApi, IdCard } from "../apis/Certificate.js";
 
 const useCertificate = () => {
   return useMutation({
