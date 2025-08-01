@@ -79,20 +79,19 @@ const generateId = async ({
     .toBuffer();
 
   // SVG text overlay
-  const svgOverlay = `
-    <svg width="1600" height="3000">
-      <style>
-        .field { font-family: "sans-serif", sans-serif; fill: #000; font-size: 26px; }
-        .bold { font-weight: bold; }
-      </style>
-      <text x="900" y="600" text-anchor="middle" class="bold" font-size="90">${name}</text>
-      <text x="930" y="1010" font-size="80" >${fatherName} abchghgh</text>
-      <text x="700" y="1156" font-size="80">${gender}</text>
-      <text x="930" y="1315" font-size="80">${mobile}</text>
-      <text x="700" y="1460" font-size="80">${address}</text>
-      <text x="730" y="2150" font-size="80" fill="#FFFFFF">${emergencyContact}</text>
-    </svg>
-  `;
+ const svgOverlay = `
+  <svg width="1600" height="3000" xmlns="http://www.w3.org/2000/svg">
+    <style>
+      text { font-family: Arial, sans-serif; fill: #000000; }
+    </style>
+    <text x="900" y="600" text-anchor="middle" font-size="90" font-weight="bold">${name}</text>
+    <text x="930" y="1010" font-size="80">${fatherName}</text>
+    <text x="700" y="1156" font-size="80">${gender}</text>
+    <text x="930" y="1315" font-size="80">${mobile}</text>
+    <text x="700" y="1460" font-size="80">${address}</text>
+    <text x="730" y="2150" font-size="80" fill="#FFFFFF">${emergencyContact}</text>
+  </svg>
+`;
 
   const svgBuffer = Buffer.from(svgOverlay);
 
