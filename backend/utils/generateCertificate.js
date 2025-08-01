@@ -48,7 +48,7 @@ const generateId = async ({
   profileImagePath, // Cloudinary URL
 }) => {
   const baseImagePath = path.join(__dirname, "templates", "ID.png");
-
+  
   if (!fs.existsSync(baseImagePath)) {
     throw new Error("ID template not found.");
   }
@@ -82,7 +82,7 @@ const generateId = async ({
   const svgOverlay = `
     <svg width="1600" height="3000">
       <style>
-        .field { font-family: "Arial", sans-serif; fill: #000; font-size: 26px; }
+        .field { font-family: "sans-serif", sans-serif; fill: #000; font-size: 26px; }
         .bold { font-weight: bold; }
       </style>
       <text x="900" y="600" text-anchor="middle" class="bold" font-size="90">${name}</text>
