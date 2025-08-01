@@ -21,7 +21,7 @@ async function launchBrowser() {
   return await puppeteer.launch({
     args: chromium.args,
     executablePath:
-      (await chromium.executablePath) || "/usr/bin/chromium-browser",
+      (await chromium.executablePath()) || "/usr/bin/chromium-browser",
     headless: chromium.headless,
     defaultViewport: chromium.defaultViewport,
   });
