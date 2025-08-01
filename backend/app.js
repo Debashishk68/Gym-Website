@@ -19,7 +19,7 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL, // Frontend URL
+  origin: process.env.FRONTEND_URL || "https://gym-website-7q5t.vercel.app/", // Frontend URL
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
