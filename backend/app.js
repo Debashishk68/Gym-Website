@@ -29,6 +29,10 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
+app.get("/",(req, res) => {
+  res.send("Welcome to the backend server");
+});
+
 app.use("/auth", authRouter);
 
 app.use("/dashboard", dashboardRouter);
