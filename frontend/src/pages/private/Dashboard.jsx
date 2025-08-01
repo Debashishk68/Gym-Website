@@ -4,7 +4,7 @@ import StatCard from "../../components/StatCard";
 import SearchBar from "../../components/SearchBar";
 import RevenueChart from "../../components/RevenueChart";
 import SectionHeader from "../../components/SectionHeader";
-import thumbnail from "../../assets/Thumbnail.svg";
+import thumbnail from "../../assets/Thumbnail.svg"; // capital T ✅
 import { FaUserAlt, FaRupeeSign } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
 import LoaderBar from "../../components/Loader";
