@@ -8,8 +8,6 @@ const saleModel = require("../models/sale");
 const supplimentModel = require("../models/supplimentModel");
 
 const getInvoices = async (req, res) => {
-  // const memberId = req.id.user;
-
   try {
     const invoices = await invoiceModel.find();
     res.status(200).json(invoices);
@@ -19,10 +17,19 @@ const getInvoices = async (req, res) => {
   }
 };
 
+async function launchBrowser() {
+  return await puppeteer.launch({
+    args: chromium.args,
+    executablePath:
+      (await chromium.executablePath) || "/usr/bin/chromium-browser",
+    headless: chromium.headless,
+    defaultViewport: chromium.defaultViewport,
+  });
+}
+
 const generateInvoicePdf = async (req, res) => {
   try {
     const invoice = req.body;
-
     const formattedDate = new Date(invoice.date).toLocaleDateString("en-IN");
 
     const logoData = await fetch(
@@ -34,6 +41,7 @@ const generateInvoicePdf = async (req, res) => {
     const invoiceData = await invoiceModel
       .findById(invoice._id)
       .populate("memberId");
+
     const planDurations = {
       Platinum: "12 months",
       Gold: "6 months",
@@ -43,156 +51,114 @@ const generateInvoicePdf = async (req, res) => {
     const planDuration = planDurations[plan] || "1 month";
 
     const htmlContent = `
-    <html>
-      <head>
-        <meta charset="UTF-8" />
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
-
-          body {
-            font-family: 'Roboto', sans-serif;
-            padding: 40px;
-            color: #333;
-            font-size: 14px;
-          }
-          .header {
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 2px solid #000;
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-          }
-          .logo {
-            height: 100px;
-            object-fit: contain;
-          }
-          .gym-info {
-            line-height: 0.8;
-          }
-          h1 {
-            text-align: center;
-            font-size: 26px;
-            text-transform: uppercase;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #aaa;
-            padding-bottom: 10px;
-          }
-          .info-section {
-            margin-bottom: 25px;
-          }
-          .info-section p {
-            margin: 4px 0;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-          }
-          th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-          }
-          thead th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-          }
-          .footer {
-            margin-top: 40px;
-            font-size: 13px;
-            border-top: 1px dashed #aaa;
-            padding-top: 20px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="gym-info">
-            <h2>AB Fitness Gym</h2>
-            <p>Joraphatak Road, Dhanbad</p>
-            <p>Jharkhand - 826001</p>
-            <p>Email:Abfit1999@gmail.com</p>
-            <p>Phone: +91 9534349922</p>
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8" />
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+            body { font-family: 'Roboto', sans-serif; padding: 40px; color: #333; font-size: 14px; }
+            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px; }
+            .logo { height: 100px; object-fit: contain; }
+            .gym-info { line-height: 0.8; }
+            h1 { text-align: center; font-size: 26px; text-transform: uppercase; margin-bottom: 30px; border-bottom: 1px solid #aaa; padding-bottom: 10px; }
+            .info-section { margin-bottom: 25px; }
+            .info-section p { margin: 4px 0; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+            th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+            thead th { background-color: #f2f2f2; font-weight: bold; }
+            .footer { margin-top: 40px; font-size: 13px; border-top: 1px dashed #aaa; padding-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="gym-info">
+              <h2>AB Fitness Gym</h2>
+              <p>Joraphatak Road, Dhanbad</p>
+              <p>Jharkhand - 826001</p>
+              <p>Email:Abfit1999@gmail.com</p>
+              <p>Phone: +91 9534349922</p>
+            </div>
+            <img src="data:image/png;base64,${logoData}" alt="Logo" class="logo" />
           </div>
-          <img src="data:image/png;base64,${logoData}" alt="Logo" class="logo" />
-        </div>
 
-        <h1>Tax Invoice</h1>
+          <h1>Tax Invoice</h1>
+          <div class="info-section">
+            <p><strong>Member Name:</strong> ${invoice.name}</p>
+            <p><strong>Date of Admission:</strong> ${formattedDate}</p>
+            <p><strong>Invoice ID:</strong> ${invoice._id.toUpperCase()}</p>
+            <p><strong>Address:</strong> ${
+              invoiceData.memberId?.address || "Not Provided"
+            }</p>
+          </div>
 
-        <div class="info-section">
-         <p><strong>Member Name:</strong> ${invoice.name}</p>
-         <p><strong>Date of Admission:</strong> ${formattedDate}</p>
-          <p><strong>Invoice ID:</strong> ${invoice._id.toUpperCase()}</p>
-          <p><strong>Address:</strong> ${
-            invoiceData.memberId?.address || "Not Provided"
-          }</p>
-        </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th>Plan Duration</th>
+                <th>Qty</th>
+                <th>Amount (INR)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>${invoice.description || "Gym Membership Plan"}</td>
+                <td>${planDuration}</td>
+                <td>1</td>
+                <td>${invoice.amount || 0}</td>
+              </tr>
+              <tr>
+                <td colspan="4" style="text-align:right;"><strong>Total</strong></td>
+                <td><strong>${invoice.amount || 0}</strong></td>
+              </tr>
+            </tbody>
+          </table>
 
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Description</th>
-              <th>Plan Duration</th>
-              <th>Qty</th>
-              <th>Amount (INR)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>${invoice.description || "Gym Membership Plan"}</td>
-              <td>${planDuration}</td>
-              <td>1</td>
-              <td>${invoice.amount || 0}</td>
-            </tr>
-            <tr>
-              <td colspan="4" style="text-align:right;"><strong>Total</strong></td>
-              <td><strong>${invoice.amount || 0}</strong></td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="footer">
-          <p><strong>Payment Status:</strong> ${invoice.status || "Pending"}</p>
-          <p><strong>Contact (WhatsApp):</strong> +91 ${
-            invoice.whatsappNumber
-          }</p>
-          <p>Thank you for choosing AB Fitness Gym!</p>
-        </div>
-      </body>
-    </html>
+          <div class="footer">
+            <p><strong>Payment Status:</strong> ${
+              invoice.status || "Pending"
+            }</p>
+            <p><strong>Contact (WhatsApp):</strong> +91 ${
+              invoice.whatsappNumber
+            }</p>
+            <p>Thank you for choosing AB Fitness Gym!</p>
+          </div>
+        </body>
+      </html>
     `;
 
-    // Generate PDF with Puppeteer
-    const browser = await puppeteer.launch();
+    // Use chromium-compatible Puppeteer
+    const browser = await launchBrowser();
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
     const buffer = await page.pdf({ format: "A4", printBackground: true });
     await browser.close();
 
-    // Upload to Cloudinary
     const uploadResponse = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          resource_type: "raw",
-          folder: "invoices",
-          public_id: `invoice_${invoice._id}`,
-          format: "pdf",
-          use_filename: true,
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
+      streamifier.createReadStream(buffer).pipe(
+        cloudinary.uploader.upload_stream(
+          {
+            resource_type: "raw",
+            folder: "invoices",
+            public_id: `invoice_${invoice._id}`,
+            format: "pdf",
+            use_filename: true,
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        )
       );
-      streamifier.createReadStream(buffer).pipe(uploadStream);
     });
+
     await invoiceModel.findByIdAndUpdate(invoice._id, {
       invoicepdf: uploadResponse.secure_url,
     });
+
     return res.status(200).json({
       success: true,
       url: uploadResponse.secure_url,
@@ -456,11 +422,7 @@ const generateSupplementInvoicePdf = async (req, res) => {
     `;
 
     // Generate PDF using Puppeteer
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless,
-    });
+    const browser = await launchBrowser();
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
     const buffer = await page.pdf({ format: "A4", printBackground: true });
