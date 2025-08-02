@@ -32,7 +32,7 @@ const addClient = async (req, res) => {
       !gender ||
       !plan ||
       !planPrice ||
-      !emergencyContact ||
+      // !emergencyContact ||
       !status ||
       !address
     ) {
@@ -138,7 +138,7 @@ const editClient = async (req, res) => {
     // Check for required fields
     const requiredFields = [
       fullname, email, phone, fathersname, age, gender,
-      plan, planPrice, emergencyContact, status, address
+      plan, planPrice, status, address
     ];
 
     if (requiredFields.some(field => field === undefined || field === null || field === '')) {

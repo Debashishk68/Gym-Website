@@ -2,13 +2,7 @@ import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  HiMail,
-  HiPhone,
-  HiUser,
-  HiUserGroup,
-  HiHome,
-} from "react-icons/hi";
+import { HiMail, HiPhone, HiUser, HiUserGroup, HiHome } from "react-icons/hi";
 
 import Navbar from "../../components/NavBar";
 import Loading from "../../components/Loader.jsx";
@@ -66,10 +60,12 @@ const MemberInfo = () => {
               <p className="text-sm flex items-center gap-2 text-gray-300">
                 <HiPhone className="text-yellow-400" /> {member.phone}
               </p>
-              <p className="text-sm flex items-center gap-2 text-gray-300">
-                <HiUserGroup className="text-yellow-400" /> Emergency:{" "}
-                {member.emergencyContact}
-              </p>
+              {member.emergencyContact ? (
+                <p className="text-sm flex items-center gap-2 text-gray-300">
+                  <HiUserGroup className="text-yellow-400" /> Emergency:{" "}
+                  {member.emergencyContact}
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -105,11 +101,15 @@ const MemberInfo = () => {
             },
             {
               label: "Joined On",
-              value: joinedDate.isValid() ? joinedDate.format("MMMM D, YYYY") : "-",
+              value: joinedDate.isValid()
+                ? joinedDate.format("MMMM D, YYYY")
+                : "-",
             },
             {
               label: "Membership Deadline",
-              value: expiryDate.isValid() ? expiryDate.format("MMMM D, YYYY") : "-",
+              value: expiryDate.isValid()
+                ? expiryDate.format("MMMM D, YYYY")
+                : "-",
               badge: isExpired ? (
                 <span className="text-red-300">
                   Expired {Math.abs(daysLeft)} days ago

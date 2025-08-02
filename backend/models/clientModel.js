@@ -48,7 +48,7 @@ const clientSchema = new mongoose.Schema({
   },
   emergencyContact: {
     type: Number,
-    required: true
+    // required: true
   },
   status: {
     type: String,

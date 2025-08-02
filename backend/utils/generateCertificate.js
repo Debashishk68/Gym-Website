@@ -5,7 +5,7 @@ const axios = require("axios");
 
 // Resolve base image safely for serverless (like Vercel)
 const getImagePath = (filename) => {
-  const relativePath = path.resolve("public", "templates", filename);
+  const relativePath = path.resolve(__dirname, "templates", filename);
   if (!fs.existsSync(relativePath)) {
     throw new Error(`Image template not found: ${filename}`);
   }
