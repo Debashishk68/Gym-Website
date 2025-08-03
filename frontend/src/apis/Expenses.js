@@ -7,6 +7,7 @@ export const AddExpense = async (expense) => {
         "Content-Type": "application/json",
         },
         body: JSON.stringify(expense),
+        credentials: "include", // Include cookies for authentication
     });
 
         const data = await response.json();
@@ -25,10 +26,11 @@ export const GetExpenses = async (month, year) => {
         headers: {
             "Content-Type": "application/json",
         },
+        credentials: "include", // Include cookies for authentication
     });
 
     const data = await response.json();
-    console.log(data)
+    
     if (!response.ok) {
         throw new Error(data.message || "Failed to fetch expenses");
     }

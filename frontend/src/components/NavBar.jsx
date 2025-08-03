@@ -14,6 +14,7 @@ const Navbar = () => {
     { label: "Invoices", to: "/invoices" },
     { label: "Certificates", to: "/generate-certificate" },
     { label: "Supplements", to: "/stock" },
+    { label: "Expenses", to: "/monthly-expenses" },
 
     { label: "Logout", to: "/logout", danger: true },
   ];

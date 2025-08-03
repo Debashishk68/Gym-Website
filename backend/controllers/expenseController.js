@@ -34,7 +34,6 @@ const AddExpenses = async (req, res) => {
 // Get all expenses for a specific month and year
 const GetMonthlyExpenses = async (req, res) => {
   const { month, year } = req.query; // GET /api/expenses?month=08&year=2025
-
   if (!month || !year) {
     return res.status(400).json({ message: "Month and year are required" });
   }
@@ -48,7 +47,6 @@ const GetMonthlyExpenses = async (req, res) => {
       date: { $gte: startDate, $lt: endDate },
       createdBy: req.user?.id || req.id?.user,
     }).sort({ date: -1 });
-
     res.status(200).json(expenses);
   } catch (error) {
     console.error("Error fetching expenses:", error);

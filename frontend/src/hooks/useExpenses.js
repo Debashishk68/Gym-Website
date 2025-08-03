@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { AddExpense, GetExpenses } from '../apis/Expenses';
+import { AddExpense, GetExpenses } from '../apis/Expenses.js';
 
 export const useAddExpense = () => {
     return useMutation({

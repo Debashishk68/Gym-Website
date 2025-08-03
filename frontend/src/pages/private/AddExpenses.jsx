@@ -8,7 +8,7 @@ import {
 } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import bgImage from "../../assets/sushil-ghimire.jpg";
-// import { useAddExpense } from "../../hooks/useExpense";
+import { useAddExpense } from "../../hooks/useExpenses.js";
 import NotLoggedIn from "../../components/NotLogin.jsx";
 import SupplementsNavbar from "../../components/SupplimentNavbar.jsx"; // or use a separate navbar
 import Navbar from "../../components/NavBar.jsx";
@@ -23,32 +23,32 @@ const AddExpense = () => {
   });
 
   const [errors, setErrors] = useState({});
-//   const {
-//     mutate: addExpense,
-//     isSuccess,
-//     isError,
-//     error,
-//     isPending,
-//   } = useAddExpense();
+  const {
+    mutate: addExpense,
+    isSuccess,
+    isError,
+    error,
+    isPending,
+  } = useAddExpense();
 
-//   useEffect(() => {
-//     if (isSuccess) {
-//       toast.success("Expense added successfully!");
-//       setFormData({ amount: "", category: "", date: "", note: "" });
-//     }
-//     if (isError) {
-//       toast.error(error.message || "Failed to add expense.");
-//     }
-//   }, [isSuccess, isError, error]);
+  useEffect(() => {
+    if (isSuccess) {
+      toast.success("Expense added successfully!");
+      setFormData({ amount: "", category: "", date: "", note: "" });
+    }
+    if (isError) {
+      toast.error(error.message || "Failed to add expense.");
+    }
+  }, [isSuccess, isError, error]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-//   if (isError && error.message === "Login failed") {
-//     return <NotLoggedIn />;
-//   }
+  if (isError && error.message === "Login failed") {
+    return <NotLoggedIn />;
+  }
 
   const validate = () => {
     const err = {};
@@ -122,10 +122,9 @@ const AddExpense = () => {
           <button
             type="submit"
             className="w-full mt-4 bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-3 rounded-lg transition"
-            // disabled={isPending}
+            disabled={isPending}
           >
-            Add Expense
-            {/* {isPending ? "Adding..." : "Add Expense"} */}
+            {isPending ? "Adding..." : "Add Expense"}
           </button>     
         </form>
       </div>

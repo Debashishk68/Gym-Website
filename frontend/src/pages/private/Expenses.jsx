@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   FaRupeeSign,
   FaClipboardList,
@@ -6,30 +6,42 @@ import {
   FaAlignLeft,
 } from "react-icons/fa";
 import bgImage from "../../assets/sushil-ghimire.jpg";
-import SupplementsNavbar from "../../components/SupplimentNavbar.jsx";
-import Navbar from "../../components/NavBar.jsx";
+import Navbar from "../../components/NavBar";
 import { useGetExpenses } from "../../hooks/useExpenses.js";
+import { Link } from "react-router-dom";
+import months from "../../utils/months.js";
+
+const today = new Date();
+const currentMonth = String(today.getMonth() + 1).padStart(2, "0");
+const currentYear = today.getFullYear();
 
 const MonthlyExpenses = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedDate, setSelectedDate] = useState("");
+  const [month, setMonth] = useState(currentMonth);
+  const [year, setYear] = useState(currentYear);
 
-  const month = 2; // August (1-indexed for user, 0-indexed if you're handling it in backend)
-  const year = 2025;
+  const {
+    data: expenses = [],
+    isLoading,
+    isError,
+  } = useGetExpenses(month, year);
 
-  const { data: expenses = [], isLoading, isError } = useGetExpenses(month, year);
+  const categories = useMemo(
+    () => ["All", ...new Set(expenses.map((e) => e.category))],
+    [expenses]
+  );
 
-  const categories = ["All", ...new Set(expenses.map(e => e.category))];
-
-  const filteredExpenses = expenses.filter((expense) => {
-    const matchCategory =
-      selectedCategory === "All" || expense.category === selectedCategory;
-    const matchDate =
-      selectedDate === "" || expense.date === selectedDate;
-    return matchCategory && matchDate;
-  });
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter((expense) => {
+      const matchCategory =
+        selectedCategory === "All" || expense.category === selectedCategory;
+      return matchCategory;
+    });
+  }, [expenses, selectedCategory]);
 
   const total = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+  const years = Array.from({ length: 5 }, (_, i) => currentYear - i); // Last 5 years
 
   if (isLoading) {
     return (
@@ -54,8 +66,17 @@ const MonthlyExpenses = () => {
     >
       <Navbar />
       <div className="max-w-4xl mx-auto mt-6 bg-black/80 backdrop-blur-md text-white p-8 rounded-xl shadow-xl">
+        <div className="flex justify-end mb-4">
+          <Link
+            to="/add-expense"
+            className="inline-block px-4 py-2 text-sm font-semibold text-yellow-500 border border-yellow-400 rounded-md hover:bg-yellow-400 hover:text-white transition-all duration-200"
+          >
+            + Add New Expense
+          </Link>
+        </div>
+
         <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-          Monthly Expenses - August 2025
+          Expenses - {months.find((m) => m.value === month)?.label} {year}
         </h2>
 
         {/* Filters */}
@@ -72,12 +93,29 @@ const MonthlyExpenses = () => {
             ))}
           </select>
 
-          <input
-            type="date"
+          <select
             className="bg-zinc-900 text-white p-2 rounded-md border border-zinc-700"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-          />
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+          >
+            {months.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+
+          <select
+            className="bg-zinc-900 text-white p-2 rounded-md border border-zinc-700"
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Total */}
@@ -90,10 +128,10 @@ const MonthlyExpenses = () => {
           {filteredExpenses.length > 0 ? (
             filteredExpenses.map((expense) => (
               <div
-                key={expense.id}
+                key={expense._id}
                 className="p-4 bg-zinc-900 border border-zinc-700 rounded-lg shadow-md"
               >
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <FaRupeeSign className="text-yellow-400" />
                     <span className="font-bold text-lg">₹{expense.amount}</span>
@@ -104,11 +142,11 @@ const MonthlyExpenses = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <FaCalendarAlt className="text-yellow-400" />
-                    <span>{expense.date}</span>
+                    <span>{expense.date.split("T")[0]}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FaAlignLeft className="text-yellow-400" />
-                    <span className="italic">{expense.note}</span>
+                    <span className="italic">{expense.note || "No note"}</span>
                   </div>
                 </div>
               </div>
