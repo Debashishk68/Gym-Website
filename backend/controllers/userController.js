@@ -17,6 +17,7 @@ const addClient = async (req, res) => {
       plan,
       planPrice,
       emergencyContact,
+      createdAt,
       status,
       address,
       notes,
@@ -39,7 +40,7 @@ const addClient = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const startDate = new Date();
+    const startDate = createdAt ? new Date(createdAt) : new Date();
     const membershipDeadline = new Date(startDate);
 
     if (plan.trim().toLowerCase() === "platinum") {
@@ -66,11 +67,11 @@ const addClient = async (req, res) => {
 
     // Access uploaded file from multer (Cloudinary)
     const file = req.file;
-    if (!file) {
-      return res.status(400).json({ message: "Profile picture is required" });
-    }
+    // if (!file) {
+    //   return res.status(400).json({ message: "Profile picture is required" });
+    // }
 
-    const profilePicUrl = file.path;
+    // const profilePicUrl = file.path;
 
     // Create new client
     const newClient = new Client({
@@ -78,7 +79,7 @@ const addClient = async (req, res) => {
       email,
       phone,
       fathersname,
-      profilePic: profilePicUrl,
+      profilePic: file?.path || null,
       age,
       gender,
       plan,
@@ -88,6 +89,7 @@ const addClient = async (req, res) => {
       address,
       notes,
       membershipDeadline,
+      createdAt,
     });
 
     await newClient.save();
@@ -137,11 +139,23 @@ const editClient = async (req, res) => {
 
     // Check for required fields
     const requiredFields = [
-      fullname, email, phone, fathersname, age, gender,
-      plan, planPrice, status, address
+      fullname,
+      email,
+      phone,
+      fathersname,
+      age,
+      gender,
+      plan,
+      planPrice,
+      status,
+      address,
     ];
 
-    if (requiredFields.some(field => field === undefined || field === null || field === '')) {
+    if (
+      requiredFields.some(
+        (field) => field === undefined || field === null || field === ""
+      )
+    ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -227,18 +241,18 @@ const editClient = async (req, res) => {
       message: "Client updated successfully",
       client,
     });
-
   } catch (error) {
     console.error("Error updating client:", error);
-    return res.status(500).json({ message: "Server error while updating client" });
+    return res
+      .status(500)
+      .json({ message: "Server error while updating client" });
   }
 };
 const members = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 5; // default limit is 5
     const clients = await Client.find()
-      .sort({ createdAt: -1 }) // latest first
-      .limit(limit);
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       clients,

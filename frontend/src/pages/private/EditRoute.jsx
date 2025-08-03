@@ -85,7 +85,7 @@ const EditSupplement = () => {
                 value={formData[field]}
                 onChange={handleChange}
                 placeholder={`Enter ${field}`}
-                className="px-4 py-2 rounded-lg bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-150"
+                className="px-4 py-2 rounded-lg appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-150"
                 required
               />
             </div>

@@ -38,10 +38,10 @@ const SupplementsNavbar = () => {
             <FaArrowLeft />
             {/* <span>Back to Dashboard</span> */}
           </Link>
-          <Link to="/" className="flex items-center gap-2 text-yellow-400 font-bold text-xl sm:text-2xl">
+          <div className="flex items-center gap-2 text-yellow-400 font-bold text-xl sm:text-2xl">
             <img src={Logo} alt="Supplement Logo" className="w-10 h-10" />
             <span className="hidden sm:block">AB Suppliment Hub</span>
-          </Link>
+          </div>
       
         </div>
 

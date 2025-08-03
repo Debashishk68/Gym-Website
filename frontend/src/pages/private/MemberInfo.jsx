@@ -18,6 +18,8 @@ const MemberInfo = () => {
 
   const { data, isSuccess, isLoading } = useMembersInfo(memberId);
   const { mutate: generateId, isPending, isSuccess: isIdSuccess } = useIdCard();
+    const defaultPlaceholder =
+    `https://ui-avatars.com/api/?name=${data?.client.fullname}&background=1a1a1a&color=ffc107&rounded=true`;
 
   useEffect(() => {
     if (isSuccess) {
@@ -40,7 +42,7 @@ const MemberInfo = () => {
         <div className="flex flex-col sm:flex-row gap-8 sm:items-center justify-between">
           <div className="flex items-center gap-6">
             <img
-              src={member.profilePic || "/default-avatar.png"}
+              src={member.profilePic || defaultPlaceholder}
               alt={member.fullname}
               className="w-28 h-28 rounded-full border-4 border-yellow-400 shadow-md object-cover hover:scale-105 transition-transform duration-300"
             />

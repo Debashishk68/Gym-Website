@@ -8,6 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMembersInfo } from "../../hooks/useDashboard.js";
 import { useDeleteMember, useEditMember } from "../../hooks/useAddMember.js";
 import { useGetPlans } from "../../hooks/useGetplans.js";
+import { InputField } from "../../components/InputField.jsx";
 
 const EditMemberForm = () => {
   const { id } = useParams();
@@ -37,6 +38,9 @@ const EditMemberForm = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [errors, setErrors] = useState({});
   const [renewPlan, setRenewPlan] = useState(false);
+  const defaultPlaceholder =
+    `https://ui-avatars.com/api/?name=${memberData?.client.fullname}&background=1a1a1a&color=ffc107&rounded=true`;
+
 
   useEffect(() => {
     if (plansSuccess) {
@@ -163,7 +167,7 @@ const EditMemberForm = () => {
                 className="hidden"
               />
               <img
-                src={imagePreview || "https://via.placeholder.com/120"}
+                src={imagePreview || defaultPlaceholder}
                 alt="Preview"
                 className="w-32 h-32 rounded-full object-cover border-4 border-yellow-400 shadow-lg hover:scale-105 transition-transform"
               />
@@ -318,37 +322,6 @@ const EditMemberForm = () => {
   );
 };
 
-// InputField component
-const InputField = ({
-  label,
-  name,
-  value,
-  onChange,
-  error,
-  placeholder,
-  icon,
-  type = "text",
-}) => (
-  <div>
-    <label className="block text-sm font-medium mb-1 text-yellow-300">
-      {label}
-    </label>
-    <div className="flex items-center gap-2 bg-zinc-800 border border-gray-600 rounded-lg px-3 focus-within:ring-2 ring-yellow-400">
-      {icon && <span className="text-yellow-400">{icon}</span>}
-      <input
-        name={name}
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full p-2 bg-transparent text-white outline-none"
-      />
-    </div>
-    {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
-  </div>
-);
-
-// TextareaField component
 const TextareaField = ({
   label,
   name,

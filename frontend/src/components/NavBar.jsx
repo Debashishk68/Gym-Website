@@ -24,13 +24,13 @@ const Navbar = () => {
     <nav className="bg-black/80 backdrop-blur-md text-white px-6 sm:px-10 py-4 shadow-lg sticky top-0 z-50">
       <div className="flex justify-between items-center max-w-screen-xl mx-auto">
         {/* Logo + Brand */}
-        <Link
-          to="/"
+        <div
+          
           className="flex items-center gap-2 text-yellow-400 font-bold text-xl sm:text-2xl"
         >
           <img src={Logo} alt="AB Supplement Hub Logo" className="w-10 h-10" />
           <span className="hidden sm:block">AB Fitness Gym</span>
-        </Link>
+        </div>
 
         {/* Desktop Menu */}
         <ul className="hidden md:flex space-x-8 text-sm font-medium">

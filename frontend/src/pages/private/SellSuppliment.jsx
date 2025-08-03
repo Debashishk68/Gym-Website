@@ -39,7 +39,6 @@ const SellSupplement = () => {
         company: selectedSupplement.company || "",
       }));
     }
-  
   }, [selectedSupplement]);
 
   // Pricing calculations
@@ -128,178 +127,144 @@ const SellSupplement = () => {
 
         <form
           onSubmit={handleSubmit}
-          className="max-w-3xl mx-auto bg-zinc-900 rounded-2xl shadow-xl p-8 space-y-6"
+          className="max-w-6xl mx-auto bg-zinc-900 rounded-2xl shadow-xl p-8 space-y-8"
         >
-          {/* Basic Inputs */}
-          {[
-            { label: "Customer Name", name: "name", type: "text" },
-            { label: "Mobile Number", name: "mobile", type: "text" },
-            { label: "Email Address", name: "email", type: "email" },
-            { label: "Weight (kg)", name: "weight", type: "text" },
-          ].map(({ label, name, type }) => (
-            <div key={name}>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[
+              { label: "Customer Name", name: "name", type: "text" },
+              { label: "Mobile Number", name: "mobile", type: "text" },
+              { label: "Email Address", name: "email", type: "email" },
+              { label: "Weight (kg)", name: "weight", type: "text" },
+              { label: "Quantity", name: "quantity", type: "number" },
+              { label: "Amount Paid", name: "amountPaid", type: "number" },
+            ].map(({ label, name, type }) => (
+              <div key={name}>
+                <label className="block text-sm mb-1 text-gray-300">
+                  {label}
+                </label>
+                <input
+                  type={type}
+                  name={name}
+                  value={formData[name]}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-zinc-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                />
+              </div>
+            ))}
+
+            {/* Supplement Name */}
+            <div>
               <label className="block text-sm mb-1 text-gray-300">
-                {label}
+                Supplement Name
+              </label>
+              <select
+                name="supplement"
+                value={formData.supplement}
+                onChange={handleChange}
+                required
+                disabled={isLoading || isError}
+                className="w-full px-4 py-3 bg-zinc-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              >
+                <option value="">
+                  {isLoading
+                    ? "Loading supplements..."
+                    : isError
+                    ? "Failed to load supplements"
+                    : "Select Supplement"}
+                </option>
+                {supplementOptions}
+              </select>
+            </div>
+
+            {/* Discount */}
+            <div>
+              <label className="block text-sm mb-1 text-gray-300">
+                Discount (%)
               </label>
               <input
-                type={type}
-                name={name}
-                value={formData[name]}
+                type="number"
+                name="discountPercent"
+                value={formData.discountPercent}
+                onChange={handleChange}
+                min="0"
+                max="100"
+                className="w-full px-4 py-3 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-zinc-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              />
+            </div>
+
+            {/* Company (Read Only) */}
+            <div>
+              <label className="block text-sm mb-1 text-gray-300">
+                Company
+              </label>
+              <input
+                type="text"
+                name="company"
+                value={formData.company}
+                readOnly
+                className="w-full px-4 py-3 bg-zinc-700 text-gray-400 border border-gray-600 rounded-lg"
+              />
+            </div>
+
+            {/* Payment Mode */}
+            <div>
+              <label className="block text-sm mb-1 text-gray-300">
+                Mode of Payment
+              </label>
+              <select
+                name="paymentMode"
+                value={formData.paymentMode}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 bg-zinc-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-              />
+              >
+                <option value="">Select Payment Mode</option>
+                <option value="cash">Cash</option>
+                <option value="online">Online</option>
+              </select>
             </div>
-          ))}
+          </div>
 
-          {/* Supplement Dropdown */}
-          <div>
-            <label className="block text-sm mb-1 text-gray-300">
-              Supplement Name
-            </label>
-            <select
-              name="supplement"
-              value={formData.supplement}
-              onChange={handleChange}
-              required
-              disabled={isLoading || isError}
-              className="w-full px-4 py-3 bg-zinc-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            >
-              <option value="">
-                {isLoading
-                  ? "Loading supplements..."
-                  : isError
-                  ? "Failed to load supplements"
-                  : "Select Supplement"}
-              </option>
-              {supplementOptions}
-            </select>
-
-            {selectedSupplement && (
-              <div className="text-sm text-gray-400 mt-2 space-y-1">
+          {/* Supplement Info & Summary */}
+          {selectedSupplement && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-800 p-4 rounded-md border border-gray-600">
+              <div className="space-y-2 text-sm text-gray-300">
                 <p>
-                  <span className="text-gray-300">Price (MRP):</span> ₹{" "}
+                  <span className="font-semibold">Price (MRP):</span> ₹
                   {mrp.toFixed(2)}
                 </p>
                 <p>
-                  <span className="text-gray-300">Available Stock:</span>{" "}
+                  <span className="font-semibold">Available Stock:</span>{" "}
                   <span className="text-yellow-400">
                     {selectedSupplement.stock}
                   </span>
                 </p>
               </div>
-            )}
-          </div>
-
-          {/* Discount Input */}
-          <div>
-            <label className="block text-sm mb-1 text-gray-300">
-              Discount (%)
-            </label>
-            <input
-              type="number"
-              name="discountPercent"
-              value={formData.discountPercent}
-              onChange={handleChange}
-              min="0"
-              max="100"
-              className="w-full px-4 py-3 bg-zinc-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            />
-          </div>
-
-          {/* Price Summary */}
-          {selectedSupplement && formData.quantity && (
-            <div className="bg-zinc-800 p-4 rounded-md border border-gray-600">
-              <p className="text-sm">
-                <span className="text-gray-300">
-                  Unit Price after Discount:
-                </span>{" "}
-                ₹ {unitPrice.toFixed(2)}
-              </p>
-              <p className="text-sm">
-                <span className="text-gray-300">Total Discount:</span> ₹{" "}
-                {totalDiscount.toFixed(2)}
-              </p>
-              <p className="text-sm">
-                <span className="text-gray-300">Total Amount:</span> ₹{" "}
-                {total.toFixed(2)}
-              </p>
+              <div className="space-y-2 text-sm text-gray-300">
+                <p>
+                  <span className="font-semibold">
+                    Unit Price (After Discount):
+                  </span>{" "}
+                  ₹{unitPrice.toFixed(2)}
+                </p>
+                <p>
+                  <span className="font-semibold">Total Discount:</span> ₹
+                  {totalDiscount.toFixed(2)}
+                </p>
+                <p>
+                  <span className="font-semibold">Total Amount:</span> ₹
+                  {total.toFixed(2)}
+                </p>
+              </div>
             </div>
           )}
-
-          {/* Quantity Input */}
-          <div>
-            <label className="block text-sm mb-1 text-gray-300">Quantity</label>
-            <input
-              type="number"
-              name="quantity"
-              value={formData.quantity}
-              onChange={handleChange}
-              required
-              min={1}
-              max={selectedSupplement?.stock || 1000}
-              className="w-full px-4 py-3 bg-zinc-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            />
-          </div>
-
-          {/* Amount paid */}
-          <div>
-            <label className="block text-sm mb-1 text-gray-300">
-              Amount Paid
-            </label>
-            <input
-              type="number"
-              name="amountPaid"
-              value={formData.amountPaid}
-              onChange={handleChange}
-              required
-              min={0}
-              className="w-full px-4 py-3 bg-zinc-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            />
-
-            {/* Show warning if amountPaid > total */}
-            {/* {formData.amountPaid && parseFloat(formData.amountPaid+) > total && (
-              <p className="text-sm text-red-400 mt-1">
-                Amount paid cannot be more than total ₹{total?.toFixed(2)}
-              </p>
-            )} */}
-          </div>
-
-          {/* Auto-Populated Company */}
-          <div>
-            <label className="block text-sm mb-1 text-gray-300">Company</label>
-            <input
-              type="text"
-              name="company"
-              value={formData.company}
-              readOnly
-              className="w-full px-4 py-3 bg-zinc-700 text-gray-400 border border-gray-600 rounded-lg"
-            />
-          </div>
-
-          {/* Payment Mode */}
-          <div>
-            <label className="block text-sm mb-1 text-gray-300">
-              Mode of Payment
-            </label>
-            <select
-              name="paymentMode"
-              value={formData.paymentMode}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 bg-zinc-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            >
-              <option value="">Select Payment Mode</option>
-              <option value="cash">Cash</option>
-              <option value="online">Online</option>
-            </select>
-          </div>
 
           {/* Submit Button */}
           <button
             type="submit"
             disabled={isPending}
-            className="w-full mt-6 bg-[#fdc700] hover:bg-yellow-300 text-black font-bold py-3 rounded-lg transition transform hover:scale-[1.02] disabled:opacity-50"
+            className="w-full mt-4 bg-[#fdc700] hover:bg-yellow-300 text-black font-bold py-3 rounded-lg transition transform hover:scale-[1.02] disabled:opacity-50"
           >
             {isPending ? "Processing..." : "Sell Now"}
           </button>

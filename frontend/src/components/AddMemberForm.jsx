@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  FaUser,
-  FaPhone,
-  FaEnvelope,
-} from "react-icons/fa";
+import { FaUser, FaPhone, FaEnvelope } from "react-icons/fa";
 import sushilGhimire from "../assets/sushil-ghimire.jpg";
 import Navbar from "./NavBar.jsx";
 import { SelectField } from "./SelectedField.jsx";
@@ -23,12 +19,13 @@ const AddMemberForm = () => {
     gender: "Male",
     address: "",
     membershipType: "",
-    startDate: new Date().toISOString().split("T")[0],
+    startDate:"" ,
     endDate: "",
     emergencyContact: "",
     status: "Active",
     notes: "",
     profileImage: null,
+    
   });
 
   const {
@@ -44,7 +41,7 @@ const AddMemberForm = () => {
   const [errors, setErrors] = useState({});
   const [imagePreview, setImagePreview] = useState(null);
   const navigate = useNavigate();
-  
+
   const defaultPlaceholder =
     "https://ui-avatars.com/api/?name=New+Member&background=1a1a1a&color=ffc107&rounded=true";
 
@@ -75,14 +72,14 @@ const AddMemberForm = () => {
   useEffect(() => {
     if (isSuccess) {
       toast.success("Successfully added member");
-      navigate("/members");
+      // navigate("/members");
     }
     if (isError) {
       toast.error(`Error: ${error.message}`);
     }
   }, [isSuccess, isError]);
 
-   if (isError && error.message === "Login failed") {
+  if (isError && error.message === "Login failed") {
     return <NotLoggedIn />;
   }
 
@@ -236,9 +233,18 @@ const AddMemberForm = () => {
           {/* Plan Price */}
           {selectedPlan && (
             <p className="text-sm text-yellow-300 mt-2 md:ml-1">
-              💳 Plan Price: ₹{planPrice} for {planDuration} {planDuration>1?"Months":"Month"}
+              💳 Plan Price: ₹{planPrice} for {planDuration}{" "}
+              {planDuration > 1 ? "Months" : "Month"}
             </p>
           )}
+          <InputField
+            label="Date of Admission"
+            name="startDate"
+            type="date"
+            value={formData.startDate}
+            onChange={handleChange}
+            placeholder=""
+          />
 
           {/* Address & Notes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -302,7 +308,7 @@ const InputField = ({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full p-2 bg-transparent text-white outline-none"
+        className="w-full p-2 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-transparent text-white outline-none"
       />
     </div>
     {error && <p className="text-red-400 text-sm">{error}</p>}

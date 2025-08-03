@@ -11,6 +11,7 @@ export const AddMember = async (data) => {
   formData.append("plan", data.formData.membershipType);
   formData.append("planPrice", data.membershipPrice);
   formData.append("emergencyContact", data.formData.emergencyContact);
+  formData.append("createdAt", data.formData.startDate);
   formData.append("status", data.formData.status);
   formData.append("address", data.formData.address);
   formData.append("notes", data.formData.notes);
