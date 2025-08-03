@@ -2,14 +2,26 @@ const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
+const { Resvg } = require("@resvg/resvg-js");
 
-// Resolve base image safely for serverless (like Vercel)
+// Helper to resolve image path safely
 const getImagePath = (filename) => {
   const relativePath = path.resolve(__dirname, "templates", filename);
   if (!fs.existsSync(relativePath)) {
     throw new Error(`Image template not found: ${filename}`);
   }
   return relativePath;
+};
+
+// Render SVG string to PNG buffer using Resvg
+const svgToPngBuffer = (svgString, width) => {
+  const resvg = new Resvg(svgString, {
+    fitTo: {
+      mode: "width",
+      value: width,
+    },
+  });
+  return resvg.render().asPng();
 };
 
 // Certificate Generator
@@ -26,7 +38,7 @@ const generateCertificate = async (
   const svgOverlay = `
     <svg width="5000" height="2000" xmlns="http://www.w3.org/2000/svg">
       <style>
-        text { font-family: sans-serif; }
+        text { font-family: Arial, sans-serif; }
       </style>
       <text x="3000" y="200" text-anchor="middle" font-size="200" fill="#3A6399">${course}</text>
       <text x="2200" y="440" text-anchor="middle" font-size="170" fill="#000000">${name}</text>
@@ -38,7 +50,7 @@ const generateCertificate = async (
     </svg>
   `;
 
-  const svgBuffer = Buffer.from(svgOverlay);
+  const svgBuffer = svgToPngBuffer(svgOverlay, 5000);
 
   const certificateBuffer = await sharp(baseImagePath)
     .composite([{ input: svgBuffer, top: 1700, left: 0 }])
@@ -62,21 +74,25 @@ const generateId = async ({
 }) => {
   const baseImagePath = getImagePath("ID.png");
 
-  // Download profile image
+  // Download profile image from URL (e.g., Cloudinary)
   let profileImageBuffer;
   try {
-    const response = await axios.get(profileImagePath, { responseType: "arraybuffer" });
+    const response = await axios.get(profileImagePath, {
+      responseType: "arraybuffer",
+    });
     profileImageBuffer = Buffer.from(response.data);
   } catch (error) {
     throw new Error("Failed to fetch profile image from Cloudinary.");
   }
 
-  // Crop to circle
+  // Create circular cropped image
   const profileCircle = await sharp(profileImageBuffer)
     .resize(650, 650)
     .composite([
       {
-        input: Buffer.from(`<svg><circle cx="325" cy="325" r="325" fill="white"/></svg>`),
+        input: Buffer.from(
+          `<svg><circle cx="325" cy="325" r="325" fill="white"/></svg>`
+        ),
         blend: "dest-in",
       },
     ])
@@ -86,7 +102,7 @@ const generateId = async ({
   const svgOverlay = `
     <svg width="1600" height="3000" xmlns="http://www.w3.org/2000/svg">
       <style>
-        text { font-family: sans-serif; fill: #000000; }
+        text { font-family: Arial, sans-serif; fill: #000000; }
       </style>
       <text x="900" y="600" text-anchor="middle" font-size="90" font-weight="bold">${name}</text>
       <text x="930" y="1010" font-size="80">${fatherName}</text>
@@ -97,7 +113,7 @@ const generateId = async ({
     </svg>
   `;
 
-  const svgBuffer = Buffer.from(svgOverlay);
+  const svgBuffer = svgToPngBuffer(svgOverlay, 1600);
 
   const finalBuffer = await sharp(baseImagePath)
     .composite([
