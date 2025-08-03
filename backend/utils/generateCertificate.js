@@ -1,70 +1,51 @@
-const sharp = require("sharp");
+const { createCanvas, loadImage, registerFont } = require("canvas");
 const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
-const { Resvg } = require("@resvg/resvg-js");
 
-// Helper to resolve image path safely
-const getImagePath = (filename) => {
-  const relativePath = path.resolve(__dirname, "templates", filename);
-  if (!fs.existsSync(relativePath)) {
-    throw new Error(`Image template not found: ${filename}`);
-  }
-  return relativePath;
-};
+// console.log(path.join(__dirname, "fonts", "Tinos-Regular.ttf"))
+// Register Tinos-Regular font
+// registerFont(path.join(__dirname, "../fonts/Tinos-Regular.ttf"), {
+//   family: "Tinos",
+// });
 
-// Render SVG string to PNG buffer using Resvg
-const svgToPngBuffer = (svgString, width) => {
-  const resvg = new Resvg(svgString, {
-    fitTo: {
-      mode: "width",
-      value: width,
-    },
-  });
-  return resvg.render().asPng();
-};
+// Helper function to draw styled text
+function drawText(ctx, text, x, y, size = 40, color = "#000", align = "center") {
+  ctx.fillStyle = color;
+  ctx.font = `${size}px "Sans"`;
+  ctx.textAlign = align;
+  ctx.fillText(text, x, y);
+}
 
 // Certificate Generator
-const generateCertificate = async (
-  name,
-  course,
-  date,
-  weightcategory,
-  weightlift,
-  place
-) => {
-  const baseImagePath = getImagePath("base.png");
+const generateCertificate = async (name, course, date, weightcategory, weightlift, place) => {
+ 
+  const baseImagePath = path.resolve(__dirname, "templates", "base.png");
+ 
+  if (!fs.existsSync(baseImagePath)) throw new Error("base.png not found");
 
-  const svgOverlay = `
-    <svg width="5000" height="2000" xmlns="http://www.w3.org/2000/svg">
-      <style>
-        text { font-family: Arial, sans-serif; }
-      </style>
-      <text x="3000" y="200" text-anchor="middle" font-size="200" fill="#3A6399">${course}</text>
-      <text x="2200" y="440" text-anchor="middle" font-size="170" fill="#000000">${name}</text>
-      <text x="1320" y="630" text-anchor="middle" font-size="110" fill="#000000">${course}</text>
-      <text x="2900" y="630" text-anchor="middle" font-size="100" fill="#000000">${date}</text>
-      <text x="2100" y="1190" text-anchor="middle" font-size="120" fill="#000000">${weightcategory}</text>
-      <text x="3500" y="1190" text-anchor="middle" font-size="120" fill="#000000">${weightlift}</text>
-      <text x="4720" y="1190" text-anchor="middle" font-size="120" fill="#000000">${place}</text>
-    </svg>
-  `;
+  const baseImage = await loadImage(baseImagePath);
 
-  const svgBuffer = svgToPngBuffer(svgOverlay, 5000);
+  const canvas = createCanvas(baseImage.width, baseImage.height);
+  const ctx = canvas.getContext("2d");
 
-  const certificateBuffer = await sharp(baseImagePath)
-    .composite([{ input: svgBuffer, top: 1700, left: 0 }])
-    .png()
-    .toBuffer();
+  ctx.drawImage(baseImage, 0, 0);
 
-  return certificateBuffer;
+  // Draw certificate text
+  drawText(ctx, course, 3000, 1820, 180, "#3A6399");
+  drawText(ctx, name, 2200, 2160, 120);
+  drawText(ctx, course, 1320, 2330, 80);
+  drawText(ctx, date, 2900, 2330, 80);
+  drawText(ctx, weightcategory, 2100, 2890, 100);
+  drawText(ctx, weightlift, 3500, 2890, 100);
+  drawText(ctx, place, 4720, 2890, 100);
+
+  return canvas.toBuffer("image/png");
 };
 
-// ID Generator
+// ID Card Generator
 const generateId = async ({
-  id,
   name,
-  time,
   fatherName,
   gender,
   mobile,
@@ -72,58 +53,43 @@ const generateId = async ({
   emergencyContact,
   profileImagePath,
 }) => {
-  const baseImagePath = getImagePath("ID.png");
+  
+  const baseImagePath = path.resolve(__dirname, "templates", "ID.png");
 
-  // Download profile image from URL (e.g., Cloudinary)
-  let profileImageBuffer;
-  try {
-    const response = await axios.get(profileImagePath, {
-      responseType: "arraybuffer",
-    });
-    profileImageBuffer = Buffer.from(response.data);
-  } catch (error) {
-    throw new Error("Failed to fetch profile image from Cloudinary.");
-  }
+  if (!fs.existsSync(baseImagePath)) throw new Error("ID.png not found");
 
-  // Create circular cropped image
-  const profileCircle = await sharp(profileImageBuffer)
-    .resize(650, 650)
-    .composite([
-      {
-        input: Buffer.from(
-          `<svg><circle cx="325" cy="325" r="325" fill="white"/></svg>`
-        ),
-        blend: "dest-in",
-      },
-    ])
-    .png()
-    .toBuffer();
+  const baseImage = await loadImage(baseImagePath);
 
-  const svgOverlay = `
-    <svg width="1600" height="3000" xmlns="http://www.w3.org/2000/svg">
-      <style>
-        text { font-family: Arial, sans-serif; fill: #000000; }
-      </style>
-      <text x="900" y="600" text-anchor="middle" font-size="90" font-weight="bold">${name}</text>
-      <text x="930" y="1010" font-size="80">${fatherName}</text>
-      <text x="700" y="1156" font-size="80">${gender}</text>
-      <text x="930" y="1315" font-size="80">${mobile}</text>
-      <text x="700" y="1460" font-size="80">${address}</text>
-      <text x="730" y="2150" font-size="80" fill="#FFFFFF">${emergencyContact}</text>
-    </svg>
-  `;
+  const canvas = createCanvas(baseImage.width, baseImage.height);
+  const ctx = canvas.getContext("2d");
 
-  const svgBuffer = svgToPngBuffer(svgOverlay, 1600);
+  ctx.drawImage(baseImage, 0, 0);
 
-  const finalBuffer = await sharp(baseImagePath)
-    .composite([
-      { input: profileCircle, left: 650, top: 730 },
-      { input: svgBuffer, top: 900, left: 0 },
-    ])
-    .png()
-    .toBuffer();
+  // Download and draw profile image in a circle
+  const profileRes = await axios.get(profileImagePath, { responseType: "arraybuffer" });
+  const profileBuffer = Buffer.from(profileRes.data);
+  const profileImage = await loadImage(profileBuffer);
 
-  return finalBuffer;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(975, 1055, 325, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+  ctx.drawImage(profileImage, 650, 730, 650, 650);
+  ctx.restore();
+
+  // Draw ID text
+  drawText(ctx, name, 900, 1500, 90);
+  drawText(ctx, fatherName, 930, 1910, 80, "#000", "left");
+  drawText(ctx, gender, 700, 2060, 80, "#000", "left");
+  drawText(ctx, mobile, 930, 2215, 80, "#000", "left");
+  drawText(ctx, address, 700, 2360, 80, "#000", "left");
+  drawText(ctx, emergencyContact, 730, 3050, 50, "#fff", "left");
+
+  return canvas.toBuffer("image/png");
 };
 
-module.exports = { generateCertificate, generateId };
+module.exports = {
+  generateCertificate,
+  generateId,
+};
