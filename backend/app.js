@@ -34,7 +34,7 @@ app.use(express.json());
 
 // CORS configuration
 const corsOptions = {
-  origin: "https://gym-website-7q5t.vercel.app",
+  origin: process.env.FRONTEND_URL || "https://gym-website-7q5t.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
