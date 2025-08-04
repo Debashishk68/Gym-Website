@@ -38,3 +38,20 @@ export const GetExpenses = async (month, year) => {
     return data;
 }
 
+export const DeleteExpense = async (id) => {
+    const response = await fetch(`${API_BASE_URL}/expenses/delete/${id}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include", // Include cookies for authentication
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+        throw new Error(data.message || "Failed to delete expense");
+    }
+
+    return data;
+}

@@ -5,6 +5,7 @@ import { IoMdRefresh } from "react-icons/io";
 import { useGenInvoice, useGetInvoice } from "../../hooks/useInvoice.js";
 import { useNavigate } from "react-router-dom";
 import { FiSearch } from "react-icons/fi";
+import  months  from "../../utils/months.js"; // Assuming you have a months.js file exporting an array of month objects
 
 const statusColor = {
   Active: "text-green-300 bg-green-700/60",
@@ -15,6 +16,15 @@ const statusColor = {
 
 const Invoices = () => {
   const [searchTerm, setSearchTerm] = useState("");
+
+  const today = new Date();
+  const [month, setMonth] = useState(String(today.getMonth() + 1).padStart(2, "0"));
+  const [year, setYear] = useState(String(today.getFullYear()));
+
+
+
+  const years = Array.from({ length: 5 }, (_, i) => String(today.getFullYear() - i));
+
   const { data, isLoading, isSuccess, isError, error, refetch } = useGetInvoice();
 
   const {
@@ -51,9 +61,17 @@ const Invoices = () => {
   const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString("en-IN");
 
   const invoices = isSuccess
-    ? data.filter((inv) =>
-        inv._id.toLowerCase().includes(searchTerm.trim().toLowerCase())
-      )
+    ? data
+        .filter((inv) => {
+          const date = new Date(inv.date);
+          const invoiceMonth = String(date.getMonth() + 1).padStart(2, "0");
+          const invoiceYear = String(date.getFullYear());
+          return (
+            invoiceMonth === month &&
+            invoiceYear === year &&
+            inv._id.toLowerCase().includes(searchTerm.trim().toLowerCase())
+          );
+        })
     : [];
 
   return (
@@ -75,7 +93,30 @@ const Invoices = () => {
               />
               <FiSearch className="absolute left-3 top-2.5 text-yellow-400 text-lg peer-focus:text-yellow-300 transition-all duration-200" />
             </div>
-           
+
+            <select
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+              className="bg-zinc-800 text-yellow-200 border border-yellow-400 rounded-md px-3 py-2 text-sm"
+            >
+              {months.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              className="bg-zinc-800 text-yellow-200 border border-yellow-400 rounded-md px-3 py-2 text-sm"
+            >
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

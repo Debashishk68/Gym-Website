@@ -5,12 +5,23 @@ const axios = require("axios");
 
 // console.log(path.join(__dirname, "fonts", "Tinos-Regular.ttf"))
 // Register Roboto_SemiCondensed-Regular font
-registerFont(path.join(__dirname, "../fonts/Roboto_SemiCondensed-Regular.ttf"), {
-  family: "Roboto",
-});
+registerFont(
+  path.join(__dirname, "../fonts/Roboto_SemiCondensed-Regular.ttf"),
+  {
+    family: "Roboto",
+  }
+);
 
 // Helper function to draw styled text
-function drawText(ctx, text, x, y, size = 40, color = "#000", align = "center") {
+function drawText(
+  ctx,
+  text,
+  x,
+  y,
+  size = 40,
+  color = "#000",
+  align = "center"
+) {
   ctx.fillStyle = color;
   ctx.font = `${size}px "Sans"`;
   ctx.textAlign = align;
@@ -18,10 +29,16 @@ function drawText(ctx, text, x, y, size = 40, color = "#000", align = "center") 
 }
 
 // Certificate Generator
-const generateCertificate = async (name, course, date, weightcategory, weightlift, place) => {
- 
+const generateCertificate = async (
+  name,
+  course,
+  date,
+  weightcategory,
+  weightlift,
+  place
+) => {
   const baseImagePath = path.resolve(__dirname, "templates", "base.png");
- 
+
   if (!fs.existsSync(baseImagePath)) throw new Error("base.png not found");
 
   const baseImage = await loadImage(baseImagePath);
@@ -54,7 +71,7 @@ const generateId = async ({
   profileImagePath,
 }) => {
   const baseImagePath = path.resolve(__dirname, "templates", "ID.png");
-  
+
   if (!fs.existsSync(baseImagePath)) throw new Error("ID.png not found");
 
   const baseImage = await loadImage(baseImagePath);
@@ -65,17 +82,21 @@ const generateId = async ({
   ctx.drawImage(baseImage, 0, 0);
 
   // Download and draw profile image in a circle
-  const profileRes = await axios.get(profileImagePath, { responseType: "arraybuffer" });
-  const profileBuffer = Buffer.from(profileRes.data);
-  const profileImage = await loadImage(profileBuffer);
+  if (profileImagePath) {
+    const profileRes = await axios.get(profileImagePath, {
+      responseType: "arraybuffer",
+    });
+    const profileBuffer = Buffer.from(profileRes.data);
+    const profileImage = await loadImage(profileBuffer);
 
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(975, 1055, 325, 0, Math.PI * 2);
-  ctx.closePath();
-  ctx.clip();
-  ctx.drawImage(profileImage, 650, 730, 650, 650);
-  ctx.restore();
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(975, 1055, 325, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(profileImage, 650, 730, 650, 650);
+    ctx.restore();
+  }
 
   // Draw ID text
   drawText(ctx, name, 900, 1500, 90);
@@ -83,8 +104,9 @@ const generateId = async ({
   drawText(ctx, gender, 700, 2060, 80, "#000", "left");
   drawText(ctx, mobile, 930, 2215, 80, "#000", "left");
   drawText(ctx, address, 700, 2360, 80, "#000", "left");
-  drawText(ctx, emergencyContact, 730, 3050, 50, "#fff", "left");
-
+  if (emergencyContact) {
+    drawText(ctx, emergencyContact, 730, 3050, 50, "#fff", "left");
+  }
   return canvas.toBuffer("image/png");
 };
 

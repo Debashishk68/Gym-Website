@@ -4,10 +4,11 @@ import {
   FaClipboardList,
   FaCalendarAlt,
   FaAlignLeft,
+  FaTrash, // ✅ New import
 } from "react-icons/fa";
 import bgImage from "../../assets/sushil-ghimire.jpg";
 import Navbar from "../../components/NavBar";
-import { useGetExpenses } from "../../hooks/useExpenses.js";
+import { useDeleteExpense, useGetExpenses } from "../../hooks/useExpenses.js";
 import { Link } from "react-router-dom";
 import months from "../../utils/months.js";
 
@@ -26,10 +27,13 @@ const MonthlyExpenses = () => {
     isError,
   } = useGetExpenses(month, year);
 
+  const { mutate: deleteExpense } = useDeleteExpense();
+
   const categories = useMemo(
     () => ["All", ...new Set(expenses.map((e) => e.category))],
     [expenses]
   );
+
 
   const filteredExpenses = useMemo(() => {
     return expenses.filter((expense) => {
@@ -38,6 +42,16 @@ const MonthlyExpenses = () => {
       return matchCategory;
     });
   }, [expenses, selectedCategory]);
+
+  const handleDeleteExpense = (id) => {
+    if (window.confirm("Are you sure you want to delete this expense?")) {
+       deleteExpense(id, {
+      onSuccess: () => {
+        refetch(); // fetch fresh data
+      },
+    });
+    }
+  };  
 
   const total = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
 
@@ -129,8 +143,17 @@ const MonthlyExpenses = () => {
             filteredExpenses.map((expense) => (
               <div
                 key={expense._id}
-                className="p-4 bg-zinc-900 border border-zinc-700 rounded-lg shadow-md"
+                className="p-4 bg-zinc-900 border border-zinc-700 rounded-lg shadow-md relative group"
               >
+                {/* Delete Icon */}
+                <button
+                  onClick={() => handleDeleteExpense(expense._id)}
+                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-opacity opacity-0 group-hover:opacity-100"
+                  title="Delete Expense"
+                >
+                  <FaTrash size={18} />
+                </button>
+
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <FaRupeeSign className="text-yellow-400" />

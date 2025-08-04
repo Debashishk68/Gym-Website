@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
-
 import {
   useGenerateSellSuppplimentpdf,
   useGetSellingSupplimentsData,
 } from "../../hooks/useSuppliment.js";
 import SupplementsNavbar from "../../components/SupplimentNavbar.jsx";
+import months from "../../utils/months.js"; // 📌 added months list
 
 const SupplementInvoice = () => {
   const { data, isLoading, isError, error, refetch, isFetching } =
@@ -15,6 +15,12 @@ const SupplementInvoice = () => {
 
   const [loadingPdfIds, setLoadingPdfIds] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // 🗓️ Filter states
+  const today = new Date();
+  const [month, setMonth] = useState(String(today.getMonth() + 1).padStart(2, "0"));
+  const [year, setYear] = useState(String(today.getFullYear()));
+  const years = Array.from({ length: 5 }, (_, i) => String(today.getFullYear() - i));
 
   useEffect(() => {
     refetch();
@@ -54,9 +60,17 @@ const SupplementInvoice = () => {
 
   const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString("en-IN");
 
-  const filteredSales = data?.filter((sale) =>
-    sale._id.toLowerCase().includes(searchTerm.trim().toLowerCase())
-  );
+  const filteredSales = data?.filter((sale) => {
+    const saleDate = new Date(sale.createdAt);
+    const saleMonth = String(saleDate.getMonth() + 1).padStart(2, "0");
+    const saleYear = String(saleDate.getFullYear());
+
+    return (
+      saleMonth === month &&
+      saleYear === year &&
+      sale._id.toLowerCase().includes(searchTerm.trim().toLowerCase())
+    );
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
@@ -67,7 +81,7 @@ const SupplementInvoice = () => {
             Supplement Invoices
           </h1>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-            <div className="relative w-full sm:w-72">
+            <div className="relative w-full sm:w-64">
               <input
                 type="text"
                 placeholder="Search Invoice ID..."
@@ -77,6 +91,34 @@ const SupplementInvoice = () => {
               />
               <FiSearch className="absolute left-3 top-2.5 text-yellow-400 text-lg peer-focus:text-yellow-300 transition-all duration-200" />
             </div>
+
+            {/* Month Filter */}
+            <select
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+              className="bg-zinc-800 text-yellow-200 border border-yellow-400 rounded-md px-3 py-2 text-sm"
+            >
+              {months.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+
+            {/* Year Filter */}
+            <select
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              className="bg-zinc-800 text-yellow-200 border border-yellow-400 rounded-md px-3 py-2 text-sm"
+            >
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+
+            {/* Refresh Button */}
             <button
               onClick={refetch}
               className="text-sm text-green-400 border border-green-400 px-3 py-1 rounded hover:bg-green-400 hover:text-black transition-all"
@@ -115,9 +157,7 @@ const SupplementInvoice = () => {
                         {sale._id.slice(0, 8).toUpperCase()}
                       </td>
                       <td className="px-6 py-4">{sale.customerName}</td>
-                      <td className="px-6 py-4">
-                        {formatDate(sale.createdAt)}
-                      </td>
+                      <td className="px-6 py-4">{formatDate(sale.createdAt)}</td>
                       <td className="px-6 py-4">{sale.supplementName}</td>
                       <td className="px-6 py-4">{sale.quantity}</td>
                       <td className="px-6 py-4">₹{sale.total.toFixed(2)}</td>
