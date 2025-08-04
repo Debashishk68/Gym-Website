@@ -148,7 +148,7 @@ const MonthlyExpenses = () => {
                 {/* Delete Icon */}
                 <button
                   onClick={() => handleDeleteExpense(expense._id)}
-                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-opacity opacity-0 group-hover:opacity-100"
+                  className={`absolute top-2 right-2 text-red-500 hover:text-red-700 transition-opacity opacity-0 group-hover:opacity-100 ${isDeleting && 'opacity-100'}`}
                   title="Delete Expense"
                 >
                   { isDeleting ? (
