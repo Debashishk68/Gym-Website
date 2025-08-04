@@ -40,7 +40,7 @@ const MemberInfo = () => {
       <div className="max-w-5xl mx-auto mt-10 p-6 rounded-xl shadow-lg bg-zinc-900/90 border border-yellow-400/30 backdrop-blur">
         {/* Header */}
         <div className="flex flex-col sm:flex-row gap-8 sm:items-center justify-between">
-          <div className="flex items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
             <img
               src={member.profilePic || defaultPlaceholder}
               alt={member.fullname}

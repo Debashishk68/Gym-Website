@@ -34,7 +34,7 @@ app.use(express.json());
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || "https://gym-website-7q5t.vercel.app",
+  origin: process.env.FRONTEND_URL,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -58,6 +58,4 @@ app.use("/expenses", expenseRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+app.listen(PORT);

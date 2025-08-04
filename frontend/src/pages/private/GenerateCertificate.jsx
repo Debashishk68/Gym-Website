@@ -1,54 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Navbar from "../../components/NavBar.jsx";
-import { useMembers } from "../../hooks/useDashboard.js";
 import { useNavigate } from "react-router-dom";
 import useCertificate from "../../hooks/useCertificate.js";
 
 const GenerateCertificate = () => {
-  const [members, setMembers] = useState([]);
-  const [selectedMemberId, setSelectedMemberId] = useState("");
+  const [name, setName] = useState("");
   const [title, setTitle] = useState("Certificate of Achievement");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [weightcategory, setWeightCategory] = useState("75kg");
   const [weightlift, setWeightLift] = useState("180kg");
   const [place, setPlace] = useState("Dhanbad");
-
-  const [selectedMember, setSelectedMember] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const {
-    mutate: certicateData,
-    isSuccess,
-    isPending,
-    isError,
-  } = useCertificate();
-
-  const { data, isSuccess: isMembersLoaded } = useMembers();
+  const { mutate: certicateData, isSuccess, isPending, isError } = useCertificate();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isMembersLoaded) {
-      setMembers(data.clients);
-    }
-  }, [isMembersLoaded, data]);
-
-  useEffect(() => {
-    const member = members.find((m) => m._id === selectedMemberId);
-    setSelectedMember(member || null);
-    setErrorMessage("");
-  }, [selectedMemberId, members]);
-
   const handleGenerate = () => {
-    if (!selectedMemberId) {
-      setErrorMessage("Please select a member.");
+    if (!name.trim()) {
+      setErrorMessage("Please enter the member's full name.");
       return;
     }
 
     const dateRange = fromDate && toDate ? `${fromDate} to ${toDate}` : "";
 
     certicateData({
-      name: selectedMember?.fullname,
+      name,
       course: title,
       date: dateRange,
       weightcategory,
@@ -63,12 +40,9 @@ const GenerateCertificate = () => {
 
       <div className="max-w-screen-xl mx-auto px-4 sm:px-8 py-10 space-y-10">
         <div>
-          <h1 className="text-3xl font-bold text-yellow-400 mb-1">
-            Generate Certificate
-          </h1>
+          <h1 className="text-3xl font-bold text-yellow-400 mb-1">Generate Certificate</h1>
           <p className="text-sm text-gray-400">
-            Easily generate and preview a certificate for any registered gym
-            member.
+            Easily generate and preview a certificate for any registered gym member.
           </p>
         </div>
 
@@ -93,30 +67,21 @@ const GenerateCertificate = () => {
               </div>
             )}
 
-            {/* Select Member */}
+            {/* Member Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Select Member
-              </label>
-              <select
-                className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-700 text-yellow-300"
-                value={selectedMemberId}
-                onChange={(e) => setSelectedMemberId(e.target.value)}
-              >
-                <option value="">-- Select Member --</option>
-                {members.map((member) => (
-                  <option key={member._id} value={member._id}>
-                    {member.fullname}
-                  </option>
-                ))}
-              </select>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Member Full Name</label>
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-700 text-white"
+              />
             </div>
 
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Certificate Title
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Certificate Title</label>
               <input
                 type="text"
                 value={title}
@@ -128,9 +93,7 @@ const GenerateCertificate = () => {
             {/* Date Range */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  From Date
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">From Date</label>
                 <input
                   type="date"
                   value={fromDate}
@@ -139,9 +102,7 @@ const GenerateCertificate = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  To Date
-                </label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">To Date</label>
                 <input
                   type="date"
                   value={toDate}
@@ -153,9 +114,7 @@ const GenerateCertificate = () => {
 
             {/* Weight Category */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Weight Category
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Weight Category</label>
               <input
                 type="text"
                 value={weightcategory}
@@ -166,9 +125,7 @@ const GenerateCertificate = () => {
 
             {/* Weight Lift */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Weight Lift (kg)
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Weight Lift (kg)</label>
               <input
                 type="text"
                 value={weightlift}
@@ -179,9 +136,7 @@ const GenerateCertificate = () => {
 
             {/* Place */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Place
-              </label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Place</label>
               <input
                 type="text"
                 value={place}
@@ -216,20 +171,16 @@ const GenerateCertificate = () => {
               <p className="text-sm text-gray-300 leading-relaxed">
                 This certificate is proudly presented to{" "}
                 <span className="text-yellow-300 font-semibold">
-                  {selectedMember?.fullname || "Member Name"}
+                  {name || "Member Name"}
                 </span>{" "}
                 for outstanding dedication and performance in{" "}
-                <span className="text-yellow-400">{weightcategory}</span>{" "}
-                category by lifting{" "}
+                <span className="text-yellow-400">{weightcategory}</span> category by lifting{" "}
                 <span className="text-yellow-400">{weightlift}</span> at{" "}
-                <span className="text-yellow-400">{place}</span> during the
-                period from{" "}
+                <span className="text-yellow-400">{place}</span> during the period from{" "}
                 <span className="text-yellow-400">{fromDate || "..."}</span> to{" "}
                 <span className="text-yellow-400">{toDate || "..."}</span>.
               </p>
-              <p className="text-sm text-gray-500 mt-4 italic">
-                ~ AB Fitness Gym
-              </p>
+              <p className="text-sm text-gray-500 mt-4 italic">~ AB Fitness Gym</p>
             </div>
           </div>
         </div>

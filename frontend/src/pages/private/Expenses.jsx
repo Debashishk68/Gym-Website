@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   FaRupeeSign,
   FaClipboardList,
   FaCalendarAlt,
   FaAlignLeft,
-  FaTrash, // ✅ New import
+  FaTrash,
 } from "react-icons/fa";
 import bgImage from "../../assets/sushil-ghimire.jpg";
 import Navbar from "../../components/NavBar";
@@ -20,42 +20,48 @@ const MonthlyExpenses = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [month, setMonth] = useState(currentMonth);
   const [year, setYear] = useState(currentYear);
+  const [expenses, setExpenses] = useState([]);
+  const [expandedExpenseId, setExpandedExpenseId] = useState(null);
 
   const {
-    data: expenses = [],
+    data,
     isLoading,
     isError,
+    isSuccess,
+    refetch,
   } = useGetExpenses(month, year);
 
   const { mutate: deleteExpense, isPending: isDeleting } = useDeleteExpense();
+
+  useEffect(() => {
+    if (isSuccess) {
+      setExpenses(data);
+    }
+  }, [isSuccess, data]);
 
   const categories = useMemo(
     () => ["All", ...new Set(expenses.map((e) => e.category))],
     [expenses]
   );
 
-
   const filteredExpenses = useMemo(() => {
     return expenses.filter((expense) => {
-      const matchCategory =
-        selectedCategory === "All" || expense.category === selectedCategory;
-      return matchCategory;
+      return selectedCategory === "All" || expense.category === selectedCategory;
     });
   }, [expenses, selectedCategory]);
 
   const handleDeleteExpense = (id) => {
     if (window.confirm("Are you sure you want to delete this expense?")) {
-       deleteExpense(id, {
-      onSuccess: () => {
-        refetch(); // fetch fresh data
-      },
-    });
+      deleteExpense(id, {
+        onSuccess: () => {
+          refetch();
+        },
+      });
     }
-  };  
+  };
 
   const total = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
-
-  const years = Array.from({ length: 5 }, (_, i) => currentYear - i); // Last 5 years
+  const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
   if (isLoading) {
     return (
@@ -83,7 +89,7 @@ const MonthlyExpenses = () => {
         <div className="flex justify-end mb-4">
           <Link
             to="/add-expense"
-            className="inline-block px-4 py-2 text-sm font-semibold text-yellow-500 border border-yellow-400 rounded-md hover:bg-yellow-400 hover:text-white transition-all duration-200"
+            className="inline-block px-4 py-2 text-sm font-semibold text-yellow-500 border border-yellow-400 rounded-md hover:bg-yellow-400 hover:text-black transition-all duration-200"
           >
             + Add New Expense
           </Link>
@@ -140,44 +146,58 @@ const MonthlyExpenses = () => {
         {/* Expense Cards */}
         <div className="grid gap-4">
           {filteredExpenses.length > 0 ? (
-            filteredExpenses.map((expense) => (
-              <div
-                key={expense._id}
-                className="p-4 bg-zinc-900 border border-zinc-700 rounded-lg shadow-md relative group"
-              >
-                {/* Delete Icon */}
-                <button
-                  onClick={() => handleDeleteExpense(expense._id)}
-                  className={`absolute top-2 right-2 text-red-500 hover:text-red-700 transition-opacity opacity-0 group-hover:opacity-100 ${isDeleting && 'opacity-100'}`}
-                  title="Delete Expense"
-                >
-                  { isDeleting ? (
-                    <span className="animate-spin">Deleting...</span>
-                  ) : (
-                    <FaTrash size={18} />
-                  )}
-                </button>
+            filteredExpenses.map((expense) => {
+              const isExpanded = expandedExpenseId === expense._id;
 
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <FaRupeeSign className="text-yellow-400" />
-                    <span className="font-bold text-lg">₹{expense.amount}</span>
+              return (
+                <div
+                  key={expense._id}
+                  className={`flex transition-all duration-300 ease-in-out ${
+                    isExpanded ? "translate-x-[-60px]" : "translate-x-0"
+                  }`}
+                >
+                  <div
+                    onClick={() =>
+                      setExpandedExpenseId(
+                        isExpanded ? null : expense._id
+                      )
+                    }
+                    className="flex-1 p-4 bg-zinc-900 border border-zinc-700 rounded-lg shadow-md cursor-pointer"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <FaRupeeSign className="text-yellow-400" />
+                        <span className="font-bold text-lg">₹{expense.amount}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaClipboardList className="text-yellow-400" />
+                        <span>{expense.category}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaCalendarAlt className="text-yellow-400" />
+                        <span>{expense.date.split("T")[0]}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaAlignLeft className="text-yellow-400" />
+                        <span className="italic">
+                          {expense.note || "No note"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <FaClipboardList className="text-yellow-400" />
-                    <span>{expense.category}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FaCalendarAlt className="text-yellow-400" />
-                    <span>{expense.date.split("T")[0]}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <FaAlignLeft className="text-yellow-400" />
-                    <span className="italic">{expense.note || "No note"}</span>
-                  </div>
+
+                  {/* Delete Button */}
+                  {isExpanded && (
+                    <button
+                      onClick={() => handleDeleteExpense(expense._id)}
+                      className="ml-2 bg-red-600 hover:bg-red-700 text-white px-3 rounded-md transition-all"
+                    >
+                      {isDeleting ? "Deleting..." : <FaTrash size={18} />}
+                    </button>
+                  )}
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <p className="text-center text-gray-300">No expenses found.</p>
           )}
