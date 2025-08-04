@@ -6,11 +6,12 @@ const axios = require("axios");
 // console.log(path.join(__dirname, "fonts", "Tinos-Regular.ttf"))
 // Register Roboto_SemiCondensed-Regular font
 registerFont(
-  path.join(__dirname, "../fonts/Roboto_SemiCondensed-Regular.ttf"),
+  path.join(__dirname, "../fonts/Poppins-Regular.ttf"),
   {
-    family: "Roboto",
+    family: "PoppinsCustom",
   }
 );
+
 
 // Helper function to draw styled text
 function drawText(
@@ -23,7 +24,7 @@ function drawText(
   align = "center"
 ) {
   ctx.fillStyle = color;
-  ctx.font = `${size}px "Sans"`;
+  ctx.font = `${size}px "PoppinsCustom"`;
   ctx.textAlign = align;
   ctx.fillText(text, x, y);
 }
