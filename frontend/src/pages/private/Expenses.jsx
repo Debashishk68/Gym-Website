@@ -27,7 +27,7 @@ const MonthlyExpenses = () => {
     isError,
   } = useGetExpenses(month, year);
 
-  const { mutate: deleteExpense } = useDeleteExpense();
+  const { mutate: deleteExpense, isPending: isDeleting } = useDeleteExpense();
 
   const categories = useMemo(
     () => ["All", ...new Set(expenses.map((e) => e.category))],
@@ -151,7 +151,11 @@ const MonthlyExpenses = () => {
                   className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-opacity opacity-0 group-hover:opacity-100"
                   title="Delete Expense"
                 >
-                  <FaTrash size={18} />
+                  { isDeleting ? (
+                    <span className="animate-spin">Deleting...</span>
+                  ) : (
+                    <FaTrash size={18} />
+                  )}
                 </button>
 
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
