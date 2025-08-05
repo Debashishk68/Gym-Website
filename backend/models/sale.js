@@ -17,9 +17,9 @@ const supplementSaleSchema = new mongoose.Schema(
     modeOfPayment: { type: String, enum: ["cash", "online"], required: true },
 
    
-    mrp: { type: Number, required: true }, 
-    discountPercent: { type: Number, default: 0 }, 
-    unitPrice: { type: Number, required: true }, 
+    mrp: [{ type: Number, required: true }], 
+    discountPercent: [{ type: Number, default: 0 }], 
+    unitPrice: [{ type: Number, required: true }], 
     total: { type: Number, required: true }, 
     totalDiscount: { type: Number, default: 0 }, 
 

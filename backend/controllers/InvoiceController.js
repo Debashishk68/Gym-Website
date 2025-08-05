@@ -179,7 +179,6 @@ const generateSupplementInvoicePdf = async (req, res) => {
 
   try {
     const sale = await saleModel.findById(id);
-    // console.log(sale)
     if (!sale) throw new Error("Sale not found");
 
     const formattedDate = new Date(sale.date || Date.now()).toLocaleDateString(
@@ -192,19 +191,16 @@ const generateSupplementInvoicePdf = async (req, res) => {
       .then((res) => res.arrayBuffer())
       .then((buffer) => Buffer.from(buffer).toString("base64"));
 
-    // Fetch all supplements by ID
     const supplements = await supplimentModel.find({
       _id: { $in: sale.supplementId },
     });
 
-    // In case some supplement not found
     if (supplements.length !== sale.supplementId.length) {
       throw new Error("One or more supplements not found");
     }
 
     const receivedAmount = sale.amountPaid || sale.total || 0;
 
-    // Get other unpaid sales for this customer
     const previousDues = await saleModel.find({
       mobileNumber: sale.mobileNumber,
       _id: { $ne: sale._id },
@@ -219,229 +215,208 @@ const generateSupplementInvoicePdf = async (req, res) => {
     const totalPayable = sale.total + previousDueAmount;
     const currentBalance = totalPayable - receivedAmount;
 
-    // Generate rows for multiple supplements
+    // Dynamically generate rows for each supplement
     const supplementRows = supplements
       .map((supp, idx) => {
+        const mrp = sale.mrp?.[idx] || supp.price || 0;
+        const discount = sale.discountPercent?.[idx] || 0;
+        const unitPrice = sale.unitPrice?.[idx] || 0;
+        const qty = 1; // or use actual quantity per item if available
+        const amount = unitPrice * qty;
+
         return `
         <tr>
           <td>${idx + 1}</td>
           <td>${supp.name}</td>
           <td>₹ ${idx === 0 ? previousDueAmount.toFixed(2) : "0.00"}</td>
-          <td>₹ ${sale.mrp?.toFixed(2) || supp.price?.toFixed(2) || "0.00"}</td>
-          <td>${sale.discountPercent || 0}%</td>
-          <td>2</td>
-          <td>₹ ${(sale.unitPrice || 0).toFixed(2)}</td>
-          <td>₹ ${(sale.total / supplements.length).toFixed(2)}</td>
-        </tr>
-      `;
+          <td>₹ ${mrp.toFixed(2)}</td>
+          <td>${discount}%</td>
+          <td>${qty}</td>
+          <td>₹ ${unitPrice.toFixed(2)}</td>
+          <td>₹ ${amount.toFixed(2)}</td>
+        </tr>`;
       })
       .join("");
 
+    // Full HTML + PDF code below
     const htmlContent = `<!DOCTYPE html>
     <html>
-      <head>
-        <style>
-         font-face {
-  font-family: 'Poppins';
-  src: url(data:font/ttf;charset=utf-8;base64,AAEAAAARAQAABAA...) format('truetype');
-}
-
-          body {
-            font-family: 'Poppins', sans-serif;
-            padding: 30px 40px;
-            color: #333;
-            font-size: 13px;
-          }
-          .top-header {
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid #444;
-            padding-bottom: 8px;
-            margin-bottom: 20px;
-          }
-          .left-info {
-            font-size: 12px;
-            line-height: 1.4;
-          }
-          .logo {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-          }
-          h1 {
-            text-align: center;
-            font-size: 20px;
-            margin: 5px 0 15px 0;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 5px;
-            text-transform: uppercase;
-          }
-          .invoice-info {
-            display: flex;
-            justify-content: space-between;
-            margin: 15px 0;
-            font-size: 13px;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            page-break-inside: avoid;
-          }
-          th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
-          }
-          thead th {
-            background-color: #eee;
-            font-weight: bold;
-          }
-          .footer-summary {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            font-size: 13px;
-            page-break-inside: avoid;
-          }
-          .footer-summary div {
-            width: 49%;
-          }
-          .summary-table td {
-            padding: 5px 8px;
-          }
-          .highlight {
-            background: #d9e0df;
-            font-weight: bold;
-          }
-          .terms {
-            margin-top: 20px;
-            font-size: 12px;
-            line-height: 1.5;
-          }
-          .sign {
-            margin-top: 30px;
-            text-align: right;
-            font-weight: bold;
-          }
-          .header-text {
-            font-size: 26px;
-            font-weight: bold;
-          }
-          ul {
-            padding-left: 18px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="top-header">
-          <div class="left-info">
-            <strong class="header-text">AB SUPPLIMENT HUB</strong><br/>
-            Howrah Motor Joraphatak Road Dhanbad, Jharkhand<br/>
-            Phone: 9534349922<br/>
-            Email: Abfit1999@gmail.com<br/>
-            GSTIN: 20AEFPS1805N1ZV<br/>
-            State: Jharkhand
-          </div>
-          <img class="logo" src="data:image/png;base64,${logoData}" />
+    <head>
+      <style>
+        body {
+          font-family: 'Poppins', sans-serif;
+          padding: 30px 40px;
+          color: #333;
+          font-size: 13px;
+        }
+        .top-header {
+          display: flex;
+          justify-content: space-between;
+          border-bottom: 1px solid #444;
+          padding-bottom: 8px;
+          margin-bottom: 20px;
+        }
+        .left-info {
+          font-size: 12px;
+          line-height: 1.4;
+        }
+        .logo {
+          width: 80px;
+          height: 80px;
+          object-fit: contain;
+        }
+        h1 {
+          text-align: center;
+          font-size: 20px;
+          margin: 5px 0 15px 0;
+          border-bottom: 1px solid #ccc;
+          padding-bottom: 5px;
+          text-transform: uppercase;
+        }
+        .invoice-info {
+          display: flex;
+          justify-content: space-between;
+          margin: 15px 0;
+          font-size: 13px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+        }
+        th, td {
+          border: 1px solid #ccc;
+          padding: 8px;
+          text-align: center;
+        }
+        thead th {
+          background-color: #eee;
+          font-weight: bold;
+        }
+        .footer-summary {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 20px;
+          font-size: 13px;
+        }
+        .footer-summary div {
+          width: 49%;
+        }
+        .summary-table td {
+          padding: 5px 8px;
+        }
+        .highlight {
+          background: #d9e0df;
+          font-weight: bold;
+        }
+        .terms {
+          margin-top: 20px;
+          font-size: 12px;
+          line-height: 1.5;
+        }
+        .sign {
+          margin-top: 30px;
+          text-align: right;
+          font-weight: bold;
+        }
+        ul {
+          padding-left: 18px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="top-header">
+        <div class="left-info">
+          <strong class="header-text">AB SUPPLIMENT HUB</strong><br/>
+          Howrah Motor Joraphatak Road Dhanbad, Jharkhand<br/>
+          Phone: 9534349922<br/>
+          Email: Abfit1999@gmail.com<br/>
+          GSTIN: 20AEFPS1805N1ZV<br/>
+          State: Jharkhand
         </div>
+        <img class="logo" src="data:image/png;base64,${logoData}" />
+      </div>
 
-        <h1>Tax Invoice</h1>
+      <h1>Tax Invoice</h1>
 
-        <div class="invoice-info">
-          <div>
-            <p><strong>Bill To:</strong></p>
-            <p>${sale.customerName}</p>
-            <p>Mobile: ${sale.mobileNumber}</p>
-          </div>
-          <div>
-            <p><strong>Invoice No:</strong> ${
-              sale.invoiceNo || `INV${Date.now()}`
-            }</p>
-            <p><strong>Date:</strong> ${formattedDate}</p>
-          </div>
+      <div class="invoice-info">
+        <div>
+          <p><strong>Bill To:</strong></p>
+          <p>${sale.customerName}</p>
+          <p>Mobile: ${sale.mobileNumber}</p>
         </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Item Name</th>
-              <th>Due</th>
-              <th>MRP</th>
-              <th>Discount (%)</th>
-              <th>Qty</th>
-              <th>Price/Unit</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${supplementRows}
-            <tr class="highlight">
-              <td colspan="4">Total</td>
-              <td>₹ ${sale.totalDiscount?.toFixed(2) || "0.00"}</td>
-              <td>${sale.quantity}</td>
-              <td></td>
-              <td>₹ ${sale.total.toFixed(2)}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="footer-summary">
-          <div>
-            <p><strong>Invoice Amount (in words):</strong><br/>${convertToWords(
-              totalPayable
-            )} only</p>
-          </div>
-          <div>
-            <table class="summary-table">
-              <tr><td>Sub Total (Before Discount)</td><td>₹ ${(
-                sale.total + sale.totalDiscount
-              ).toFixed(2)}</td></tr>
-              <tr><td>Discount (${
-                sale.discountPercent || 0
-              }%)</td><td>₹ ${sale.totalDiscount.toFixed(2)}</td></tr>
-              <tr><td>Previous Due</td><td>₹ ${previousDueAmount.toFixed(
-                2
-              )}</td></tr>
-              <tr class="highlight"><td>Total Payable</td><td>₹ ${totalPayable.toFixed(
-                2
-              )}</td></tr>
-              <tr><td>Received</td><td>₹ ${receivedAmount.toFixed(2)}</td></tr>
-              <tr><td>Balance (Due)</td><td>₹ ${currentBalance.toFixed(
-                2
-              )}</td></tr>
-            </table>
-          </div>
+        <div>
+          <p><strong>Invoice No:</strong> ${sale.invoiceNo || `INV${Date.now()}`}</p>
+          <p><strong>Date:</strong> ${formattedDate}</p>
         </div>
+      </div>
 
-        <div class="terms">
-          <p><strong>You Saved:</strong> ₹ ${sale.totalDiscount.toFixed(2)}</p>
-          <p><strong>Previous Due:</strong> ₹ ${previousDueAmount.toFixed(
-            2
-          )}</p>
-          <p><strong>Current Due:</strong> ₹ ${currentBalance.toFixed(2)}</p>
-          <p><strong>Mode of Payment:</strong> ${sale.modeOfPayment}</p>
-          <p><strong>Terms & Conditions:</strong></p>
-          <ul>
-            <li>Goods once sold will not be taken back or exchanged.</li>
-            <li>Please check the product before leaving the counter.</li>
-          </ul>
-          <p>Thanks for doing business with us.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Item Name</th>
+            <th>Due</th>
+            <th>MRP</th>
+            <th>Discount (%)</th>
+            <th>Qty</th>
+            <th>Price/Unit</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${supplementRows}
+          <tr class="highlight">
+            <td colspan="4">Total</td>
+            <td>₹ ${sale.totalDiscount?.toFixed(2) || "0.00"}</td>
+            <td>${sale.quantity}</td>
+            <td></td>
+            <td>₹ ${sale.total.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="footer-summary">
+        <div>
+          <p><strong>Invoice Amount (in words):</strong><br/>${convertToWords(
+            totalPayable
+          )} only</p>
         </div>
+        <div>
+          <table class="summary-table">
+            <tr><td>Sub Total (Before Discount)</td><td>₹ ${(sale.total + sale.totalDiscount).toFixed(2)}</td></tr>
+            <tr><td>Discount</td><td>₹ ${sale.totalDiscount.toFixed(2)}</td></tr>
+            <tr><td>Previous Due</td><td>₹ ${previousDueAmount.toFixed(2)}</td></tr>
+            <tr class="highlight"><td>Total Payable</td><td>₹ ${totalPayable.toFixed(2)}</td></tr>
+            <tr><td>Received</td><td>₹ ${receivedAmount.toFixed(2)}</td></tr>
+            <tr><td>Balance (Due)</td><td>₹ ${currentBalance.toFixed(2)}</td></tr>
+          </table>
+        </div>
+      </div>
 
-        <p class="sign">AB SUPPLIMENT HUB<br/><br/>Authorized Signatory</p>
-      </body>
+      <div class="terms">
+        <p><strong>You Saved:</strong> ₹ ${sale.totalDiscount.toFixed(2)}</p>
+        <p><strong>Previous Due:</strong> ₹ ${previousDueAmount.toFixed(2)}</p>
+        <p><strong>Current Due:</strong> ₹ ${currentBalance.toFixed(2)}</p>
+        <p><strong>Mode of Payment:</strong> ${sale.modeOfPayment}</p>
+        <p><strong>Terms & Conditions:</strong></p>
+        <ul>
+          <li>Goods once sold will not be taken back or exchanged.</li>
+          <li>Please check the product before leaving the counter.</li>
+        </ul>
+        <p>Thanks for doing business with us.</p>
+      </div>
+
+      <p class="sign">AB SUPPLIMENT HUB<br/><br/>Authorized Signatory</p>
+    </body>
     </html>`;
 
-    // Generate PDF
     const browser = await launchBrowser();
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
     const buffer = await page.pdf({ format: "A4", printBackground: true });
     await browser.close();
 
-    // Upload to Cloudinary
     const cloudRes = await new Promise((resolve, reject) => {
       streamifier.createReadStream(buffer).pipe(
         cloudinary.uploader.upload_stream(
@@ -456,13 +431,9 @@ const generateSupplementInvoicePdf = async (req, res) => {
       );
     });
 
-    // Update sale and previous dues
-    sale.invoicePdf = cloudRes.secure_url;
     let remainingPayment = receivedAmount;
-
     for (const due of previousDues) {
       const dueAmount = due.amountDue || 0;
-
       if (remainingPayment >= dueAmount) {
         due.amountDue = 0;
         remainingPayment -= dueAmount;
@@ -470,7 +441,6 @@ const generateSupplementInvoicePdf = async (req, res) => {
         due.amountDue -= remainingPayment;
         remainingPayment = 0;
       }
-
       await due.save();
       if (remainingPayment <= 0) break;
     }
@@ -493,6 +463,7 @@ const generateSupplementInvoicePdf = async (req, res) => {
     });
   }
 };
+
 
 module.exports = {
   getInvoices,

@@ -162,8 +162,10 @@ const sellSupplement = async (req, res) => {
       amountPaid = 0,
       supplements = [],
     } = req.body;
-    console.log(req.body)
-    // Validate main fields
+
+    console.log("Request Body:", req.body);
+
+    // Basic validation
     if (!customerName || !mobileNumber || !modeOfPayment || supplements.length === 0) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -172,8 +174,9 @@ const sellSupplement = async (req, res) => {
     let totalDiscount = 0;
     const supplementIdList = [];
     const supplementNameList = [];
+    const supplementDiscountList = [];
+    const supplementMrpList = [];
 
-    // Loop through each supplement
     for (const item of supplements) {
       const {
         supplementId,
@@ -198,7 +201,7 @@ const sellSupplement = async (req, res) => {
         });
       }
 
-      // Price calculation
+      // Pricing logic
       const discountPerUnit = (mrp * discountPercent) / 100;
       const unitPrice = mrp - discountPerUnit;
       const itemTotal = unitPrice * quantity;
@@ -207,18 +210,20 @@ const sellSupplement = async (req, res) => {
       total += itemTotal;
       totalDiscount += itemDiscount;
 
-      // Reduce stock
+      // Update stock
       supplement.stock -= quantity;
       await supplement.save();
 
-      // Collect for sale record
+      // Collect info
       supplementIdList.push(supplementId);
       supplementNameList.push(name);
+      supplementMrpList.push(mrp);
+      supplementDiscountList.push(discountPercent);
     }
 
     const amountDue = total - amountPaid;
 
-    // Save sale record
+    // Save the sale
     const sale = new SupplementSale({
       customerName,
       mobileNumber,
@@ -227,10 +232,10 @@ const sellSupplement = async (req, res) => {
       supplementName: supplementNameList,
       supplementId: supplementIdList,
       quantity: supplements.reduce((sum, s) => sum + s.quantity, 0),
-      modeOfPayment: modeOfPayment,
-      mrp: 0, // Irrelevant here, could be averaged if needed
-      discountPercent: 0,
-      unitPrice: 0,
+      modeOfPayment,
+      mrp: supplementMrpList, // optional: could be removed or averaged
+      discountPercent: supplementDiscountList,
+      unitPrice: supplementMrpList,
       total,
       totalDiscount,
       amountPaid,
@@ -249,6 +254,7 @@ const sellSupplement = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 module.exports = {
   addSuppliment,
