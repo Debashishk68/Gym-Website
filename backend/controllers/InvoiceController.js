@@ -52,7 +52,12 @@ const generateInvoicePdf = async (req, res) => {
     const planDuration = planDurations[plan] || "1 month";
 
     const amount = Number(invoice.amount) || 0;
-    const discount = Number(invoice.discount) || 0;
+    const discountPercentage = Number(invoice.discount) || 0;
+
+    // Calculate discount amount from percentage
+    const discount = (amount * discountPercentage) / 100;
+
+    // Subtract discount from amount
     const finalAmount = amount - discount;
 
     const htmlContent = `
@@ -132,7 +137,9 @@ const generateInvoicePdf = async (req, res) => {
           </table>
 
           <div class="footer">
-            <p><strong>Payment Status:</strong> ${invoice.status || "Pending"}</p>
+            <p><strong>Payment Status:</strong> ${
+              invoice.status || "Pending"
+            }</p>
             <p><strong>Contact (WhatsApp):</strong> +91 ${
               invoice.whatsappNumber || "N/A"
             }</p>
@@ -184,7 +191,6 @@ const generateInvoicePdf = async (req, res) => {
     });
   }
 };
-
 
 const generateSupplementInvoicePdf = async (req, res) => {
   const id = req.params.id;
@@ -358,7 +364,9 @@ const generateSupplementInvoicePdf = async (req, res) => {
           <p>Mobile: ${sale.mobileNumber}</p>
         </div>
         <div>
-          <p><strong>Invoice No:</strong> ${sale.invoiceNo || `INV${Date.now()}`}</p>
+          <p><strong>Invoice No:</strong> ${
+            sale.invoiceNo || `INV${Date.now()}`
+          }</p>
           <p><strong>Date:</strong> ${formattedDate}</p>
         </div>
       </div>
@@ -396,12 +404,22 @@ const generateSupplementInvoicePdf = async (req, res) => {
         </div>
         <div>
           <table class="summary-table">
-            <tr><td>Sub Total (Before Discount)</td><td>₹ ${(sale.total + sale.totalDiscount).toFixed(2)}</td></tr>
-            <tr><td>Discount</td><td>₹ ${sale.totalDiscount.toFixed(2)}</td></tr>
-            <tr><td>Previous Due</td><td>₹ ${previousDueAmount.toFixed(2)}</td></tr>
-            <tr class="highlight"><td>Total Payable</td><td>₹ ${totalPayable.toFixed(2)}</td></tr>
+            <tr><td>Sub Total (Before Discount)</td><td>₹ ${(
+              sale.total + sale.totalDiscount
+            ).toFixed(2)}</td></tr>
+            <tr><td>Discount</td><td>₹ ${sale.totalDiscount.toFixed(
+              2
+            )}</td></tr>
+            <tr><td>Previous Due</td><td>₹ ${previousDueAmount.toFixed(
+              2
+            )}</td></tr>
+            <tr class="highlight"><td>Total Payable</td><td>₹ ${totalPayable.toFixed(
+              2
+            )}</td></tr>
             <tr><td>Received</td><td>₹ ${receivedAmount.toFixed(2)}</td></tr>
-            <tr><td>Balance (Due)</td><td>₹ ${currentBalance.toFixed(2)}</td></tr>
+            <tr><td>Balance (Due)</td><td>₹ ${currentBalance.toFixed(
+              2
+            )}</td></tr>
           </table>
         </div>
       </div>
@@ -475,7 +493,6 @@ const generateSupplementInvoicePdf = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   getInvoices,
