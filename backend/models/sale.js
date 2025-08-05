@@ -7,12 +7,12 @@ const supplementSaleSchema = new mongoose.Schema(
     emailAddress: { type: String },
     weightKg: { type: String },
     company: { type: String },
-    supplementName: { type: String, required: true },
-    supplementId: {
+    supplementName:[{ type: String, required: true }],
+    supplementId: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Supplement",
       required: true,
-    },
+    }],
     quantity: { type: Number, required: true },
     modeOfPayment: { type: String, enum: ["cash", "online"], required: true },
 

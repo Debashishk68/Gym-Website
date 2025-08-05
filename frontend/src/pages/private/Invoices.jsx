@@ -61,18 +61,23 @@ const Invoices = () => {
   const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString("en-IN");
 
   const invoices = isSuccess
-    ? data
-        .filter((inv) => {
-          const date = new Date(inv.date);
-          const invoiceMonth = String(date.getMonth() + 1).padStart(2, "0");
-          const invoiceYear = String(date.getFullYear());
-          return (
-            invoiceMonth === month &&
-            invoiceYear === year &&
-            inv._id.toLowerCase().includes(searchTerm.trim().toLowerCase())
-          );
-        })
-    : [];
+  ? data.filter((inv) => {
+      const date = new Date(inv.date);
+      const invoiceMonth = String(date.getMonth() + 1).padStart(2, "0");
+      const invoiceYear = String(date.getFullYear());
+
+      const matchesMonthYear = invoiceMonth === month && invoiceYear === year;
+      const search = searchTerm.trim().toLowerCase();
+
+      const matchesSearch =
+        inv._id.toLowerCase().includes(search) ||
+        inv.name.toLowerCase().includes(search) ||
+        inv.whatsappNumber.includes(searchTerm);
+
+      return matchesMonthYear && matchesSearch;
+    })
+  : [];
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">

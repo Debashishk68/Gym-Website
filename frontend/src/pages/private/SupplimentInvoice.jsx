@@ -18,9 +18,13 @@ const SupplementInvoice = () => {
 
   // 🗓️ Filter states
   const today = new Date();
-  const [month, setMonth] = useState(String(today.getMonth() + 1).padStart(2, "0"));
+  const [month, setMonth] = useState(
+    String(today.getMonth() + 1).padStart(2, "0")
+  );
   const [year, setYear] = useState(String(today.getFullYear()));
-  const years = Array.from({ length: 5 }, (_, i) => String(today.getFullYear() - i));
+  const years = Array.from({ length: 5 }, (_, i) =>
+    String(today.getFullYear() - i)
+  );
 
   useEffect(() => {
     refetch();
@@ -60,17 +64,22 @@ const SupplementInvoice = () => {
 
   const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString("en-IN");
 
-  const filteredSales = data?.filter((sale) => {
-    const saleDate = new Date(sale.createdAt);
-    const saleMonth = String(saleDate.getMonth() + 1).padStart(2, "0");
-    const saleYear = String(saleDate.getFullYear());
+const filteredSales = data?.filter((sale) => {
+  const saleDate = new Date(sale.createdAt);
+  const saleMonth = String(saleDate.getMonth() + 1).padStart(2, "0");
+  const saleYear = String(saleDate.getFullYear());
 
-    return (
-      saleMonth === month &&
-      saleYear === year &&
-      sale._id.toLowerCase().includes(searchTerm.trim().toLowerCase())
-    );
-  });
+  const matchesMonthYear = saleMonth === month && saleYear === year;
+  const search = searchTerm.trim().toLowerCase();
+
+  const matchesSearch =
+    sale._id.toLowerCase().includes(search) ||
+    sale.customerName.toLowerCase().includes(search) ||
+    sale.mobileNumber.includes(searchTerm);
+
+  return matchesMonthYear && matchesSearch;
+});
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
@@ -157,7 +166,9 @@ const SupplementInvoice = () => {
                         {sale._id.slice(0, 8).toUpperCase()}
                       </td>
                       <td className="px-6 py-4">{sale.customerName}</td>
-                      <td className="px-6 py-4">{formatDate(sale.createdAt)}</td>
+                      <td className="px-6 py-4">
+                        {formatDate(sale.createdAt)}
+                      </td>
                       <td className="px-6 py-4">{sale.supplementName}</td>
                       <td className="px-6 py-4">{sale.quantity}</td>
                       <td className="px-6 py-4">₹{sale.total.toFixed(2)}</td>

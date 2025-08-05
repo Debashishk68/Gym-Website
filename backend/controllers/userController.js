@@ -100,7 +100,7 @@ const addClient = async (req, res) => {
       memberId: memberId._id,
       name: fullname,
       amount: planPrice,
-      date: Date.now(),
+      date: createdAt,
       status: status,
       whatsappNumber: phone,
     });

@@ -7,7 +7,7 @@ const SupplementsNavbar = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const isSupplementsPage = ["/stock", "/add-supplement", "/sell-supplement", "/sell-invoice"].some(
+  const isSupplementsPage = ["/stock", "/add-supplement", "/sell-supplement", "/sell-invoice","/supplement-history"].some(
     (prefix) => location.pathname.startsWith(prefix)
   );
 

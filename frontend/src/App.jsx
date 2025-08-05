@@ -38,6 +38,7 @@ import Invoices from "./pages/private/Invoices.jsx";
 
 // Fallback
 import PageNotFound from "./pages/PageNotFound.jsx";
+import SupplementHistory from "./pages/private/SupplimentHistory.jsx";
 // import NotLoggedIn from "./pages/NotLogin.jsx";
 
 const App = () => {
@@ -65,6 +66,7 @@ const App = () => {
       <Route path="/stock" element={<SupplementStock />} />
       <Route path="/edit/:id" element={<EditSupplement />} />
       <Route path="/sell-invoice" element={<SupplementInvoice />} />
+      <Route path="/supplement-history" element={<SupplementHistory />} />
 
       {/* Expense Management */}
       <Route path="/add-expense" element={<AddExpense />} />

@@ -139,7 +139,7 @@ const sellingData = async (req, res) => {
     const sales = await SupplementSale.find({})
       .sort({ createdAt: -1 })
       .select(
-        "customerName mobileNumber supplementName quantity total invoicePdf createdAt"
+        "customerName mobileNumber supplementName quantity total invoicePdf createdAt amountDue"
       ); // select only necessary fields for performance
 
     return res.status(200).json(sales);
@@ -158,51 +158,65 @@ const sellSupplement = async (req, res) => {
       mobileNumber,
       email,
       weight,
-      company,
-      supplementName,
-      supplementId,
-      quantity,
-      paymentMode,
-      amountPaid, 
-      mrp, // ✅ from frontend
-      discountPercent = 0, // ✅ default to 0
+      modeOfPayment,
+      amountPaid = 0,
+      supplements = [],
     } = req.body;
-
-    // Validate required fields
-    if (
-      !customerName ||
-      !mobileNumber ||
-      !supplementId ||
-      !quantity ||
-      !paymentMode ||
-      !mrp
-    ) {
+    console.log(req.body)
+    // Validate main fields
+    if (!customerName || !mobileNumber || !modeOfPayment || supplements.length === 0) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Fetch supplement
-    const supplement = await Supplement.findById(supplementId);
-    if (!supplement) {
-      return res.status(404).json({ message: "Supplement not found" });
+    let total = 0;
+    let totalDiscount = 0;
+    const supplementIdList = [];
+    const supplementNameList = [];
+
+    // Loop through each supplement
+    for (const item of supplements) {
+      const {
+        supplementId,
+        name,
+        quantity,
+        mrp,
+        discountPercent = 0,
+      } = item;
+
+      if (!supplementId || !quantity || !mrp) {
+        return res.status(400).json({ message: "Invalid supplement data" });
+      }
+
+      const supplement = await Supplement.findById(supplementId);
+      if (!supplement) {
+        return res.status(404).json({ message: `Supplement not found: ${name}` });
+      }
+
+      if (supplement.stock < quantity) {
+        return res.status(400).json({
+          message: `Only ${supplement.stock} units left for ${supplement.name}`,
+        });
+      }
+
+      // Price calculation
+      const discountPerUnit = (mrp * discountPercent) / 100;
+      const unitPrice = mrp - discountPerUnit;
+      const itemTotal = unitPrice * quantity;
+      const itemDiscount = discountPerUnit * quantity;
+
+      total += itemTotal;
+      totalDiscount += itemDiscount;
+
+      // Reduce stock
+      supplement.stock -= quantity;
+      await supplement.save();
+
+      // Collect for sale record
+      supplementIdList.push(supplementId);
+      supplementNameList.push(name);
     }
 
-    // Check stock
-    if (supplement.stock < quantity) {
-      return res.status(400).json({
-        message: `Only ${supplement.stock} items left in stock`,
-      });
-    }
-
-    // Price calculations
-    const discountPerUnit = (mrp * discountPercent) / 100;
-    const unitPrice = mrp - discountPerUnit;
-    const total = unitPrice * quantity;
-    const totalDiscount = discountPerUnit * quantity;
-    const amountDue = total - amountPaid; 
-
-    // Reduce stock
-    supplement.stock -= quantity;
-    await supplement.save();
+    const amountDue = total - amountPaid;
 
     // Save sale record
     const sale = new SupplementSale({
@@ -210,30 +224,29 @@ const sellSupplement = async (req, res) => {
       mobileNumber,
       emailAddress: email,
       weightKg: weight,
-      company,
-      supplementName,
-      supplementId,
-      quantity,
-      modeOfPayment: paymentMode,
-      mrp,
-      discountPercent,
-      unitPrice,
-      amountPaid,
+      supplementName: supplementNameList,
+      supplementId: supplementIdList,
+      quantity: supplements.reduce((sum, s) => sum + s.quantity, 0),
+      modeOfPayment: modeOfPayment,
+      mrp: 0, // Irrelevant here, could be averaged if needed
+      discountPercent: 0,
+      unitPrice: 0,
       total,
-      amountDue,
       totalDiscount,
+      amountPaid,
+      amountDue,
     });
 
     await sale.save();
 
-   
     return res.status(201).json({
-      message: "Supplement sold successfully",
+      message: "Supplements sold successfully",
       data: sale,
     });
+
   } catch (error) {
     console.error("Sell Supplement Error:", error);
-    return res.status(500).json({ message: "Something went wrong" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
