@@ -251,8 +251,7 @@ const editClient = async (req, res) => {
 const members = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 5; // default limit is 5
-    const clients = await Client.find()
-      .sort({ createdAt: -1 });
+    const clients = await Client.find().sort({ createdAt: -1 });
 
     return res.status(200).json({
       clients,
@@ -357,38 +356,66 @@ const revenueChart = async (req, res) => {
       },
     ]);
 
+    const fourWeeksAgo = new Date();
+    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 27); // Past 28 days (inclusive)
+
     const weeklyRevenue = await Client.aggregate([
       {
-        $addFields: {
-          dayOfMonth: { $dayOfMonth: "$createdAt" },
+        $match: {
+          createdAt: { $gte: fourWeeksAgo },
         },
       },
       {
         $addFields: {
-          week: {
+          isoWeek: { $isoWeek: "$createdAt" },
+          isoYear: { $isoWeekYear: "$createdAt" },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            week: "$isoWeek",
+            year: "$isoYear",
+          },
+          totalRevenue: { $sum: "$planPrice" },
+        },
+      },
+      {
+        $sort: {
+          "_id.year": 1,
+          "_id.week": 1,
+        },
+      },
+      {
+        $addFields: {
+          weekLabel: {
             $concat: [
               "Week ",
-              {
-                $toString: {
-                  $ceil: { $divide: ["$dayOfMonth", 7] },
-                },
-              },
+              { $toString: "$_id.week" },
+              " (",
+              { $toString: "$_id.year" },
+              ")",
             ],
           },
         },
       },
       {
-        $group: {
-          _id: "$week",
-          totalRevenue: { $sum: "$planPrice" },
+        $project: {
+          _id: 0,
+          week: "$weekLabel",
+          totalRevenue: 1,
         },
-      },
-      {
-        $sort: { _id: 1 },
       },
     ]);
 
     const dailyRevenue = await Client.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: new Date(new Date().setDate(new Date().getDate() - 6)), // past 7 days including today
+          },
+        },
+      },
       {
         $addFields: {
           date: {
@@ -415,8 +442,8 @@ const revenueChart = async (req, res) => {
 
     // Convert to object format like { "Week 1": 1500, ... }
     const revenueByWeek = {};
-    weeklyRevenue.forEach(({ _id, totalRevenue }) => {
-      revenueByWeek[_id] = totalRevenue;
+    weeklyRevenue.forEach(({ week, totalRevenue }) => {
+      revenueByWeek[week] = totalRevenue;
     });
 
     // Convert array to object like { Jan: 1500, Feb: 2100, ... }
@@ -511,7 +538,16 @@ const deleteClient = async (req, res) => {
 
 const clientJoinChart = async (req, res) => {
   try {
-    // Monthly Joins
+    const now = new Date();
+
+    // Dates
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(now.getDate() - 6); // includes today
+
+    const fourWeeksAgo = new Date();
+    fourWeeksAgo.setDate(now.getDate() - 27); // 4 weeks = 28 days
+
+    // Monthly Joins (no filter, show all months)
     const monthlyJoins = await Client.aggregate([
       {
         $addFields: {
@@ -560,11 +596,11 @@ const clientJoinChart = async (req, res) => {
       },
     ]);
 
-    // Weekly Joins
+    // Weekly Joins (last 4 weeks)
     const weeklyJoins = await Client.aggregate([
       {
-        $addFields: {
-          dayOfMonth: { $dayOfMonth: "$createdAt" },
+        $match: {
+          createdAt: { $gte: fourWeeksAgo },
         },
       },
       {
@@ -574,7 +610,17 @@ const clientJoinChart = async (req, res) => {
               "Week ",
               {
                 $toString: {
-                  $ceil: { $divide: ["$dayOfMonth", 7] },
+                  $ceil: {
+                    $divide: [
+                      {
+                        $subtract: [
+                          { $dayOfYear: "$createdAt" },
+                          { $dayOfYear: fourWeeksAgo },
+                        ],
+                      },
+                      7,
+                    ],
+                  },
                 },
               },
             ],
@@ -592,8 +638,13 @@ const clientJoinChart = async (req, res) => {
       },
     ]);
 
-    // Daily Joins
+    // Daily Joins (last 7 days)
     const dailyJoins = await Client.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: sevenDaysAgo },
+        },
+      },
       {
         $addFields: {
           date: {
@@ -623,13 +674,13 @@ const clientJoinChart = async (req, res) => {
       joinsByWeek[_id] = totalJoins;
     });
 
-    // This is sent as array directly, no need to format
     res.send({ joinsByMonth, joinsByWeek, dailyJoins });
   } catch (error) {
     console.error("Client Join Error:", error);
     res.status(500).json({ message: "Error calculating client join trends." });
   }
 };
+
 
 module.exports = {
   addClient,

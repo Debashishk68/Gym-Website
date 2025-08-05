@@ -27,7 +27,7 @@ const MemberInfo = () => {
     }
   }, [isSuccess, data]);
 
-  const joinedDate = dayjs(member.joinedAt);
+  const joinedDate = dayjs(member.createdAt);
   const expiryDate = dayjs(member.membershipDeadline);
   const daysLeft = expiryDate.diff(dayjs(), "day");
   const isExpired = daysLeft < 0;

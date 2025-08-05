@@ -30,7 +30,7 @@ const ClientJoinTrends = () => {
   const [weekly, setWeekly] = useState({});
   const [daily, setDaily] = useState([]);
 
-  const { data, isSuccess, isLoading, isError, error } = useCLientTrends(); 
+  const { data, isSuccess, isLoading, isError, error } = useCLientTrends();
 
   useEffect(() => {
     if (isSuccess) {
@@ -44,7 +44,7 @@ const ClientJoinTrends = () => {
     const date = new Date(dateStr);
     return date.toLocaleDateString("en-US", { weekday: "short" });
   };
-   if (isError && error.message === "Login failed") {
+  if (isError && error.message === "Login failed") {
     return <NotLoggedIn />;
   }
 
@@ -65,6 +65,7 @@ const ClientJoinTrends = () => {
 
   const selected = datasets[range];
   const totalJoins = selected.data.reduce((sum, v) => sum + v, 0);
+  const latestLabel = selected.labels[selected.labels.length - 1] || "";
 
   const chartData = {
     labels: selected.labels,
@@ -144,10 +145,12 @@ const ClientJoinTrends = () => {
 
         {/* Chart Section */}
         <div className="bg-zinc-800 p-6 rounded-2xl shadow-lg border border-green-500/20">
-          <h2 className="text-xl font-semibold text-green-400 mb-1">
-            {range.charAt(0).toUpperCase() + range.slice(1)} Joins
-          </h2>
-          <p className="text-4xl font-bold text-white">{totalJoins}</p>
+          <p className="text-4xl font-bold text-white">
+            {totalJoins}{" "}
+            <span className="text-sm text-gray-400 font-normal">
+              ({latestLabel})
+            </span>
+          </p>
 
           {isLoading ? (
             <p className="text-gray-400 mt-4">Loading chart...</p>

@@ -61,7 +61,10 @@ const RevenueTrends = () => {
   };
 
   const selected = datasets[range];
-  const totalRevenue = selected.data.reduce((sum, v) => sum + v, 0);
+
+  const latestIndex = selected.data.length - 1;
+  const latestRevenue = selected.data[latestIndex] || 0;
+  const latestLabel = selected.labels[latestIndex] || "";
 
   const chartData = {
     labels: selected.labels,
@@ -150,9 +153,13 @@ const RevenueTrends = () => {
           <h2 className="text-xl font-semibold text-yellow-400 mb-1">
             {range.charAt(0).toUpperCase() + range.slice(1)} Revenue
           </h2>
-          <p className="text-4xl font-bold text-white">
-            ₹{totalRevenue.toLocaleString()}
-          </p>
+          <div className="flex items-center  text-white text-4xl font-bold mt-2">
+            <span>₹{latestRevenue.toLocaleString()}</span>
+            <span className="text-xl text-gray-400 font-medium ml-4">
+              {latestLabel}
+            </span>
+          </div>
+         
           {/* <p className="text-sm text-green-400 mb-4">This {range} +12%</p> */}
 
           {isLoading ? (
