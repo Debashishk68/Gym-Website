@@ -179,6 +179,7 @@ const generateSupplementInvoicePdf = async (req, res) => {
 
   try {
     const sale = await saleModel.findById(id);
+    // console.log(sale)
     if (!sale) throw new Error("Sale not found");
 
     const formattedDate = new Date(sale.date || Date.now()).toLocaleDateString(
@@ -240,7 +241,11 @@ const generateSupplementInvoicePdf = async (req, res) => {
     <html>
       <head>
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+         font-face {
+  font-family: 'Poppins';
+  src: url(data:font/ttf;charset=utf-8;base64,AAEAAAARAQAABAA...) format('truetype');
+}
+
           body {
             font-family: 'Poppins', sans-serif;
             padding: 30px 40px;
