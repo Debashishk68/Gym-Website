@@ -20,6 +20,9 @@ const invoiceSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    discount:{
+      type:Number
+    },
     date: {
       type: Date,
       default: Date.now,

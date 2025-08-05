@@ -20,6 +20,7 @@ const addClient = async (req, res) => {
       createdAt,
       status,
       address,
+      discount,
       notes,
     } = req.body;
 
@@ -87,6 +88,7 @@ const addClient = async (req, res) => {
       emergencyContact,
       status,
       address,
+      discount,
       notes,
       membershipDeadline,
       createdAt,
@@ -102,6 +104,7 @@ const addClient = async (req, res) => {
       amount: planPrice,
       date: createdAt,
       status: status,
+      discount:discount||0,
       whatsappNumber: phone,
     });
     await newInvoice.save();

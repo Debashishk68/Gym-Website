@@ -47,8 +47,13 @@ const generateInvoicePdf = async (req, res) => {
       Gold: "6 months",
       Standard: "3 months",
     };
+
     const plan = invoiceData.memberId?.plan;
     const planDuration = planDurations[plan] || "1 month";
+
+    const amount = Number(invoice.amount) || 0;
+    const discount = Number(invoice.discount) || 0;
+    const finalAmount = amount - discount;
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -108,21 +113,28 @@ const generateInvoicePdf = async (req, res) => {
                 <td>${invoice.description || "Gym Membership Plan"}</td>
                 <td>${planDuration}</td>
                 <td>1</td>
-                <td>${invoice.amount || 0}</td>
+                <td>${amount.toFixed(2)}</td>
               </tr>
+              ${
+                discount > 0
+                  ? `
+              <tr>
+                <td colspan="4" style="text-align:right;"><strong>Discount</strong></td>
+                <td style="color: green;">- ₹${discount.toFixed(2)}</td>
+              </tr>`
+                  : ""
+              }
               <tr>
                 <td colspan="4" style="text-align:right;"><strong>Total</strong></td>
-                <td><strong>${invoice.amount || 0}</strong></td>
+                <td><strong>₹${finalAmount.toFixed(2)}</strong></td>
               </tr>
             </tbody>
           </table>
 
           <div class="footer">
-            <p><strong>Payment Status:</strong> ${
-              invoice.status || "Pending"
-            }</p>
+            <p><strong>Payment Status:</strong> ${invoice.status || "Pending"}</p>
             <p><strong>Contact (WhatsApp):</strong> +91 ${
-              invoice.whatsappNumber
+              invoice.whatsappNumber || "N/A"
             }</p>
             <p>Thank you for choosing AB Fitness Gym!</p>
           </div>
@@ -130,7 +142,6 @@ const generateInvoicePdf = async (req, res) => {
       </html>
     `;
 
-    // Use chromium-compatible Puppeteer
     const browser = await launchBrowser();
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
@@ -173,6 +184,7 @@ const generateInvoicePdf = async (req, res) => {
     });
   }
 };
+
 
 const generateSupplementInvoicePdf = async (req, res) => {
   const id = req.params.id;

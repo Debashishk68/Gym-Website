@@ -16,7 +16,8 @@ const SellSupplement = () => {
     isError,
   } = useGetAllSuppliments();
 
-  const { data: salesData, isSuccess: isSalesSuccess } = useGetSellingSupplimentsData();
+  const { data: salesData, isSuccess: isSalesSuccess } =
+    useGetSellingSupplimentsData();
   const { mutate: sellSupplement, isPending } = useSellSupppliment();
 
   const [formData, setFormData] = useState({
@@ -37,7 +38,6 @@ const SellSupplement = () => {
 
   const [previousDue, setPreviousDue] = useState(0);
 
-  // Auto-fill name and email from past sales
   useEffect(() => {
     if (!isSalesSuccess || !formData.mobile) return;
 
@@ -75,7 +75,10 @@ const SellSupplement = () => {
   const addSupplement = () => {
     setFormData((prev) => ({
       ...prev,
-      supplements: [...prev.supplements, { supplement: "", quantity: "", discountPercent: "" }],
+      supplements: [
+        ...prev.supplements,
+        { supplement: "", quantity: "", discountPercent: "" },
+      ],
     }));
   };
 
@@ -85,68 +88,106 @@ const SellSupplement = () => {
     setFormData((prev) => ({ ...prev, supplements: updated }));
   };
 
+  // 🔢 Calculate total of supplements
+  const calculatedSupplementItems = formData.supplements.map((item) => {
+    const selected = supplementsData?.data.find(
+      (s) => s.name === item.supplement
+    );
+    const mrp = selected?.price || 0;
+    const discount = parseFloat(item.discountPercent) || 0;
+    const quantity = parseInt(item.quantity) || 0;
+    const discountAmount = (mrp * discount) / 100;
+    const unitPrice = mrp - discountAmount;
+    const total = unitPrice * quantity;
+    return { total };
+  });
+
+  const supplementTotal = calculatedSupplementItems.reduce(
+    (acc, item) => acc + item.total,
+    0
+  );
+
+  const totalPayable = supplementTotal + previousDue;
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const supplementItems = formData.supplements.map((item) => {
-      const selected = supplementsData?.data.find((s) => s.name === item.supplement);
-      const mrp = selected?.price || 0;
-      const discount = parseFloat(item.discountPercent) || 0;
-      const quantity = parseInt(item.quantity) || 0;
+    try {
+      const supplementItems = formData.supplements.map((item) => {
+        const selected = supplementsData?.data.find(
+          (s) => s.name === item.supplement
+        );
+        const mrp = selected?.price || 0;
+        const discount = parseFloat(item.discountPercent) || 0;
+        const quantity = parseInt(item.quantity) || 0;
 
-      if (quantity > selected.stock) {
-        throw new Error(`Quantity exceeds stock for ${selected.name}`);
-      }
+        if (quantity > selected.stock) {
+          throw new Error(`Quantity exceeds stock for ${selected.name}`);
+        }
 
-      const discountAmount = (mrp * discount) / 100;
-      const unitPrice = mrp - discountAmount;
-      const total = unitPrice * quantity;
-      const totalDiscount = discountAmount * quantity;
+        const discountAmount = (mrp * discount) / 100;
+        const unitPrice = mrp - discountAmount;
+        const total = unitPrice * quantity;
+        const totalDiscount = discountAmount * quantity;
 
-      return {
-        supplementId: selected._id,
-        name: selected.name,
-        quantity,
-        mrp,
-        discountPercent: discount,
-        unitPrice,
-        total,
-        totalDiscount,
+        return {
+          supplementId: selected._id,
+          name: selected.name,
+          quantity,
+          mrp,
+          discountPercent: discount,
+          unitPrice,
+          total,
+          totalDiscount,
+        };
+      });
+
+      const grandTotal = supplementItems.reduce(
+        (acc, item) => acc + item.total,
+        0
+      );
+      const grandDiscount = supplementItems.reduce(
+        (acc, item) => acc + item.totalDiscount,
+        0
+      );
+
+      const payload = {
+        customerName: formData.name,
+        mobileNumber: formData.mobile,
+        email: formData.email,
+        weight: formData.weight,
+        modeOfPayment: formData.paymentMode,
+        amountPaid: parseFloat(formData.amountPaid),
+        amountDue: Math.max(
+          grandTotal + previousDue - parseFloat(formData.amountPaid || 0),
+          0
+        ),
+        supplements: supplementItems,
       };
-    });
 
-    const grandTotal = supplementItems.reduce((acc, item) => acc + item.total, 0);
-    const grandDiscount = supplementItems.reduce((acc, item) => acc + item.totalDiscount, 0);
-
-    const payload = {
-      customerName: formData.name,
-      mobileNumber: formData.mobile,
-      email: formData.email,
-      weight: formData.weight,
-      modeOfPayment: formData.paymentMode,
-      amountPaid: parseFloat(formData.amountPaid),
-      amountDue: Math.max(grandTotal + previousDue - parseFloat(formData.amountPaid || 0), 0),
-      supplements: supplementItems,
-    };
-
-    sellSupplement(payload, {
-      onSuccess: () => {
-        toast.success("Supplement(s) sold successfully!");
-        setFormData({
-          name: "",
-          mobile: "",
-          email: "",
-          weight: "",
-          paymentMode: "",
-          amountPaid: "",
-          supplements: [{ supplement: "", quantity: "", discountPercent: "" }],
-        });
-        setPreviousDue(0);
-      },
-      onError: (error) => {
-        toast.error(error?.message || "Failed to sell supplements");
-      },
-    });
+      sellSupplement(payload, {
+        onSuccess: () => {
+          toast.success("Supplement(s) sold successfully!");
+          setFormData({
+            name: "",
+            mobile: "",
+            email: "",
+            weight: "",
+            paymentMode: "",
+            amountPaid: "",
+            supplements: [
+              { supplement: "", quantity: "", discountPercent: "" },
+            ],
+          });
+          setPreviousDue(0);
+        },
+        onError: (error) => {
+          toast.error(error?.message || "Failed to sell supplements");
+        },
+      });
+    } catch (error) {
+      toast.error(error.message || "Error processing sale");
+    }
   };
 
   return (
@@ -195,16 +236,10 @@ const SellSupplement = () => {
               onChange={handleChange}
               placeholder="Weight"
             />
-            <InputField
-              label="Amount Paid"
-              name="amountPaid"
-              type="number"
-              value={formData.amountPaid}
-              onChange={handleChange}
-              placeholder="Amount Paid"
-            />
             <div className="flex flex-col">
-              <label className="mb-2 text-sm text-gray-400 font-medium">Payment Mode</label>
+              <label className="mb-2 text-sm text-gray-400 font-medium">
+                Payment Mode
+              </label>
               <select
                 name="paymentMode"
                 value={formData.paymentMode}
@@ -219,11 +254,12 @@ const SellSupplement = () => {
             </div>
           </div>
 
-          {/* Multi Supplement Selection */}
           <div>
             <h2 className="text-xl font-semibold mb-4">Supplements</h2>
             {formData.supplements.map((item, index) => {
-              const selected = supplementsData?.data.find((s) => s.name === item.supplement);
+              const selected = supplementsData?.data.find(
+                (s) => s.name === item.supplement
+              );
               const mrp = selected?.price || 0;
               const stock = selected?.stock || 0;
               const discount = parseFloat(item.discountPercent) || 0;
@@ -231,7 +267,6 @@ const SellSupplement = () => {
               const discountAmount = (mrp * discount) / 100;
               const unitPrice = mrp - discountAmount;
               const total = unitPrice * quantity;
-              const totalDiscount = discountAmount * quantity;
 
               return (
                 <div
@@ -240,7 +275,9 @@ const SellSupplement = () => {
                 >
                   <select
                     value={item.supplement}
-                    onChange={(e) => updateSupplement(index, "supplement", e.target.value)}
+                    onChange={(e) =>
+                      updateSupplement(index, "supplement", e.target.value)
+                    }
                     required
                     className="bg-zinc-800 text-white px-3 py-2 rounded-lg border border-zinc-700"
                   >
@@ -257,7 +294,9 @@ const SellSupplement = () => {
                     type="number"
                     placeholder="Quantity"
                     value={item.quantity}
-                    onChange={(e) => updateSupplement(index, "quantity", e.target.value)}
+                    onChange={(e) =>
+                      updateSupplement(index, "quantity", e.target.value)
+                    }
                     className="bg-zinc-800 text-white px-3 py-2 rounded-lg border border-zinc-700"
                     required
                   />
@@ -266,19 +305,28 @@ const SellSupplement = () => {
                     type="number"
                     placeholder="Discount %"
                     value={item.discountPercent}
-                    onChange={(e) => updateSupplement(index, "discountPercent", e.target.value)}
+                    onChange={(e) =>
+                      updateSupplement(index, "discountPercent", e.target.value)
+                    }
                     className="bg-zinc-800 text-white px-3 py-2 rounded-lg border border-zinc-700"
                   />
 
                   <div className="text-sm text-gray-300 mt-2">
                     <p>
-                      <span className="text-yellow-400 font-medium">MRP:</span> ₹{mrp}
+                      <span className="text-yellow-400 font-medium">MRP:</span>{" "}
+                      ₹{mrp}
                     </p>
                     <p>
-                      <span className="text-yellow-400 font-medium">Stock:</span> {stock}
+                      <span className="text-yellow-400 font-medium">
+                        Stock:
+                      </span>{" "}
+                      {stock}
                     </p>
                     <p>
-                      <span className="text-yellow-400 font-medium">Total:</span> ₹{total.toFixed(2)}
+                      <span className="text-yellow-400 font-medium">
+                        Total:
+                      </span>{" "}
+                      ₹{total.toFixed(2)}
                     </p>
                   </div>
 
@@ -302,11 +350,30 @@ const SellSupplement = () => {
             </button>
           </div>
 
-          {previousDue > 0 && (
-            <div className="mt-4 bg-red-900 text-red-200 border border-red-600 p-4 rounded-lg text-sm">
-              <strong>Previous Due:</strong> ₹{previousDue.toFixed(2)}
+          {/* Total Calculation Summary */}
+          <div className="space-y-2 mt-6">
+            {previousDue > 0 && (
+              <div className="bg-red-900 text-red-200 border border-red-600 p-4 rounded-lg text-sm">
+                <strong>Previous Due:</strong> ₹{previousDue.toFixed(2)}
+              </div>
+            )}
+            <div className="bg-red-900 text-red-200 border border-red-600 p-4 rounded-lg text-sm">
+              <strong>Supplement Total:</strong> ₹{supplementTotal.toFixed(2)}
             </div>
-          )}
+            <div className="bg-green-900 text-green-200 border border-green-600 p-4 rounded-lg text-sm font-semibold text-lg">
+              <strong>Total Payable (Due + Supplements):</strong> ₹
+              {totalPayable.toFixed(2)}
+            </div>
+          </div>
+
+          <InputField
+            label="Amount Paid"
+            name="amountPaid"
+            type="number"
+            value={formData.amountPaid}
+            onChange={handleChange}
+            placeholder="Amount Paid"
+          />
 
           <button
             type="submit"

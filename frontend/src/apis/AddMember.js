@@ -15,6 +15,7 @@ export const AddMember = async (data) => {
   formData.append("status", data.formData.status);
   formData.append("address", data.formData.address);
   formData.append("notes", data.formData.notes);
+  formData.append("discount",data.formData.discount);
 
   try {
     const response = await fetch(`${API_BASE_URL}/dashboard/add-profile`, {

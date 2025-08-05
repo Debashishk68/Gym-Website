@@ -29,14 +29,22 @@ async function login(req, res) {
       expiresIn: "7d",
     });
 
-    res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "none" }).status(200).json({
-      message: "Login successful",
-      isAuthenticated: true,
-      role: user.role,
-      userId: user._id,
-      name: user.name,
-      profilepic: user.profilepic,
-    });
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      })
+      .status(200)
+      .json({
+        message: "Login successful",
+        isAuthenticated: true,
+        role: user.role,
+        userId: user._id,
+        name: user.name,
+        profilepic: user.profilepic,
+      });
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -89,7 +97,7 @@ const resetPassword = async (req, res) => {
     user.password = hashedPassword;
     await user.save();
 
-    await OTP.deleteOne({ email }); 
+    await OTP.deleteOne({ email });
 
     return res.status(200).json({ message: "Password reset successful" });
   } catch (err) {
@@ -104,4 +112,4 @@ function logout(req, res) {
     .json({ message: "Successfully logged out" });
 }
 
-module.exports = { login, register, logout ,resetPassword };
+module.exports = { login, register, logout, resetPassword };

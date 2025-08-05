@@ -19,13 +19,13 @@ const AddMemberForm = () => {
     gender: "Male",
     address: "",
     membershipType: "",
-    startDate:"" ,
+    startDate: "",
     endDate: "",
     emergencyContact: "",
     status: "Active",
     notes: "",
+    discount:"",
     profileImage: null,
-    
   });
 
   const {
@@ -48,7 +48,10 @@ const AddMemberForm = () => {
   const selectedPlan = plans.find(
     (plan) => plan.name === formData.membershipType
   );
-  const planPrice = selectedPlan?.durations?.[0]?.price;
+  const rawPrice = selectedPlan?.durations?.[0]?.price || 0;
+  const discountPercent = parseFloat(formData.discount) || 0;
+  const planPrice = rawPrice - (rawPrice * discountPercent) / 100;
+
   const planDuration = selectedPlan?.durations?.[0]?.months;
 
   useEffect(() => {
@@ -203,6 +206,16 @@ const AddMemberForm = () => {
               onChange={handleChange}
               options={["Male", "Female", "Other"]}
             />
+            <InputField
+              label="Discount (%)"
+              name="discount"
+              type="number"
+              value={formData.discount}
+              onChange={handleChange}
+              error={errors.discount}
+              placeholder="e.g. 10"
+            />
+
             <SelectField
               label="Plan"
               name="membershipType"
@@ -232,11 +245,16 @@ const AddMemberForm = () => {
 
           {/* Plan Price */}
           {selectedPlan && (
-            <p className="text-sm text-yellow-300 mt-2 md:ml-1">
-              💳 Plan Price: ₹{planPrice} for {planDuration}{" "}
-              {planDuration > 1 ? "Months" : "Month"}
-            </p>
+            <div className="text-sm text-yellow-300 mt-2 md:ml-1 space-y-1">
+              <p>💳 Base Price: ₹{rawPrice}</p>
+              <p>🎁 Discount: {discountPercent}%</p>
+              <p className="font-semibold text-green-400">
+                Final Price: ₹{planPrice.toFixed(2)} for {planDuration}{" "}
+                {planDuration > 1 ? "Months" : "Month"}
+              </p>
+            </div>
           )}
+
           <InputField
             label="Date of Admission"
             name="startDate"
