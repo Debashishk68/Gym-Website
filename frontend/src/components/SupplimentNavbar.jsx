@@ -7,17 +7,22 @@ const SupplementsNavbar = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const isSupplementsPage = ["/stock", "/add-supplement", "/sell-supplement", "/sell-invoice","/supplement-history"].some(
-    (prefix) => location.pathname.startsWith(prefix)
-  );
+  const isSupplementsPage = [
+    "/stock",
+    "/add-supplement",
+    "/sell-supplement",
+    "/sell-invoice",
+    "/supplement-history",
+  ].some((prefix) => location.pathname.startsWith(prefix));
 
   if (!isSupplementsPage) return null;
 
   const supplementLinks = [
-    { label: "All Supplements", to: "/stock" },
+    { label: "Dashboard", to: "/supplement-history" },
+    { label: "Stock", to: "/stock" },
     { label: "Add New", to: "/add-supplement" },
-    { label: "Sell Supplement", to: "/sell-supplement" },
-    { label: "Supplements Invoice", to: "/sell-invoice" },
+    { label: "Sell", to: "/sell-supplement" },
+    { label: "Invoices", to: "/sell-invoice" },
   ];
 
   const isActive = (path) => location.pathname.startsWith(path);
@@ -28,10 +33,9 @@ const SupplementsNavbar = () => {
   return (
     <nav className="bg-black/80 backdrop-blur-md text-white px-6 sm:px-10 py-3 shadow sticky top-0 z-50">
       <div className="flex justify-between items-center max-w-screen-xl mx-auto">
-        
         {/* Logo + Back Button */}
         <div className="flex items-center gap-4">
-              <Link
+          <Link
             to="/dashboard"
             className="text-yellow-400 mr-5 hover:text-yellow-300 flex items-center gap-1 text-sm sm:text-base"
           >
@@ -42,7 +46,6 @@ const SupplementsNavbar = () => {
             <img src={Logo} alt="Supplement Logo" className="w-10 h-10" />
             <span className="hidden sm:block">AB Suppliment Hub</span>
           </div>
-      
         </div>
 
         {/* Desktop Links */}
@@ -65,7 +68,10 @@ const SupplementsNavbar = () => {
 
         {/* Hamburger Icon */}
         <div className="sm:hidden">
-          <button onClick={toggleMenu} className="text-yellow-400 text-xl focus:outline-none">
+          <button
+            onClick={toggleMenu}
+            className="text-yellow-400 text-xl focus:outline-none"
+          >
             {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
           </button>
         </div>

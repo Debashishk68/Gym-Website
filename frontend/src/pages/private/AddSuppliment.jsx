@@ -50,7 +50,7 @@ const AddSupplement = () => {
     if (!formData.name) err.name = "Name is required";
     if (!formData.price) err.price = "Price is required";
     if (!formData.stock) err.stock = "Stock is required";
-    if (!formData.weight) err.weight = "Weight is required";
+    // if (!formData.weight) err.weight = "Weight is required";
     if (!formData.company) err.company = "Company is required";
     setErrors(err);
     return Object.keys(err).length === 0;

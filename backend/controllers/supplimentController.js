@@ -1,6 +1,5 @@
 const Supplement = require("../models/supplimentModel");
 const SupplementSale = require("../models/sale");
-const { generateSupplementInvoicePdf } = require("./InvoiceController");
 
 const addSuppliment = async (req, res) => {
   try {

@@ -14,7 +14,7 @@ const supplementSchema = new mongoose.Schema(
     },
     weight: {
       type: String,
-      required: true,
+      // required: true,
     },
     price: {
       type: Number,
