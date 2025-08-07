@@ -7,49 +7,74 @@ import { useMembers } from "../../hooks/useDashboard.js";
 import { useNavigate } from "react-router-dom";
 import LoaderBar from "../../components/Loader.jsx";
 import NotLoggedIn from "../../components/NotLogin.jsx";
+import InactiveMembersPanel from "../../components/InactiveMembersPanel.jsx";
 
 const MembersPage = () => {
   const [members, setMembers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
   const navigate = useNavigate();
 
   const { data, isSuccess, isError, error, isLoading } = useMembers();
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && data?.clients) {
       setMembers(data.clients);
     }
   }, [isSuccess, data]);
- if (isError && error.message === "Login failed") {
+
+  if (isError && error.message === "Login failed") {
     return <NotLoggedIn />;
   }
-  const filtered = members.filter((m) => {
-    const nameMatch = m.fullname
-      ?.toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const emailMatch = m.email
-      ?.toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const phoneMatch = m.phone?.toString().includes(searchTerm);
 
+  // Filter for search
+  const filtered = members.filter((m) => {
+    const nameMatch = m.fullname?.toLowerCase().includes(searchTerm.toLowerCase());
+    const emailMatch = m.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const phoneMatch = m.phone?.toString().includes(searchTerm);
     return nameMatch || emailMatch || phoneMatch;
   });
 
+  // Inactive members (whose deadline has passed)
+  const inactiveMembers = members.filter(
+    (m) => new Date(m.membershipDeadline).getTime() <= Date.now()
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black text-white">
+    <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black text-white relative overflow-hidden">
       <Navbar />
       {isLoading && <LoaderBar />}
 
-      <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
-        {/* Header + Add Button */}
+      {/* Inactive Panel */}
+      <InactiveMembersPanel
+        show={showInactive}
+        onClose={() => setShowInactive(false)}
+        inactiveMembers={inactiveMembers}
+      />
+
+      {/* Main Content */}
+      <div
+        className={`max-w-7xl mx-auto px-6 py-10 space-y-8 transition-all duration-300 ${
+          showInactive ? "mr-80" : ""
+        }`}
+      >
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <SectionHeader title="🏋️‍♂️ All Members" />
-          <button
-            onClick={() => navigate("/add-member")}
-            className="px-5 py-2 rounded-full border-2 border-amber-400 text-amber-400 font-semibold hover:bg-amber-400 hover:text-black transition duration-300 shadow-sm"
-          >
-            Add Member
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowInactive(true)}
+              className="px-4 py-2 rounded-full border-2 border-indigo-400 text-indigo-400 font-semibold hover:bg-indigo-400 hover:text-black transition duration-300 shadow-sm"
+            >
+              Show Inactive
+            </button>
+            <button
+              onClick={() => navigate("/add-member")}
+              className="px-5 py-2 rounded-full border-2 border-amber-400 text-amber-400 font-semibold hover:bg-amber-400 hover:text-black transition duration-300 shadow-sm"
+            >
+              Add Member
+            </button>
+          </div>
         </div>
 
         {/* Search */}
@@ -69,7 +94,7 @@ const MembersPage = () => {
           </p>
         )}
 
-        {/* Member Grid */}
+        {/* Member Cards */}
         {filtered.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-fade-in">
             {filtered.map((member) => (
