@@ -50,13 +50,48 @@ const Invoices = () => {
       },
     });
   };
+const handleWhatsAppClick = async (invoice) => {
+  const date = new Date(invoice.date).toLocaleDateString("en-IN");
+  const invoiceId = invoice._id.slice(0, 8);
+  const amount = Number(invoice.amount).toFixed(2);
+  const status = invoice.status || "Not Available";
+  const link = invoice.invoicepdf || "No PDF";
 
-  const handleWhatsAppClick = (invoice) => {
-    const date = new Date(invoice.date).toLocaleDateString("en-IN");
-    const message = `Hi ${invoice.name}, here is your invoice:\n\nInvoice ID: ${invoice._id.slice(0, 8)}\nDate: ${date}\nAmount: ₹${invoice.amount}\nStatus: ${invoice.status}\n\nDownload PDF: ${invoice.invoicepdf}`;
-    const url = `https://wa.me/91${invoice.whatsappNumber}?text=${encodeURIComponent(message)}`;
-    window.open(url, "_blank");
-  };
+  const message = `Hi ${invoice.name},
+
+Here is your invoice:
+
+Invoice ID: ${invoiceId}
+Date: ${date}
+Amount: ₹${amount}
+Status: ${status}
+
+Download PDF: ${link}`;
+
+  const response = await fetch("https://graph.facebook.com/v18.0/YOUR_PHONE_NUMBER_ID/messages", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer YOUR_ACCESS_TOKEN",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: `+91${invoice.whatsappNumber}`,
+      type: "text",
+      text: {
+        preview_url: true,
+        body: message
+      }
+    })
+  });
+
+  const data = await response.json();
+  console.log("WhatsApp API response:", data);
+};
+
+
+
 
   const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString("en-IN");
 

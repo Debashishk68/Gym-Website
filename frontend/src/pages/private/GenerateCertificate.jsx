@@ -5,6 +5,7 @@ import useCertificate from "../../hooks/useCertificate.js";
 
 const GenerateCertificate = () => {
   const [name, setName] = useState("");
+  const [level, setLevel] = useState("State Level"); // ✅ new state for level
   const [title, setTitle] = useState("Certificate of Achievement");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -13,7 +14,12 @@ const GenerateCertificate = () => {
   const [place, setPlace] = useState("Dhanbad");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const { mutate: certicateData, isSuccess, isPending, isError } = useCertificate();
+  const {
+    mutate: certicateData,
+    isSuccess,
+    isPending,
+    isError,
+  } = useCertificate();
   const navigate = useNavigate();
 
   const handleGenerate = () => {
@@ -26,6 +32,7 @@ const GenerateCertificate = () => {
 
     certicateData({
       name,
+      level, // ✅ include level
       course: title,
       date: dateRange,
       weightcategory,
@@ -40,9 +47,12 @@ const GenerateCertificate = () => {
 
       <div className="max-w-screen-xl mx-auto px-4 sm:px-8 py-10 space-y-10">
         <div>
-          <h1 className="text-3xl font-bold text-yellow-400 mb-1">Generate Certificate</h1>
+          <h1 className="text-3xl font-bold text-yellow-400 mb-1">
+            Generate Certificate
+          </h1>
           <p className="text-sm text-gray-400">
-            Easily generate and preview a certificate for any registered gym member.
+            Easily generate and preview a certificate for any registered gym
+            member.
           </p>
         </div>
 
@@ -69,7 +79,9 @@ const GenerateCertificate = () => {
 
             {/* Member Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Member Full Name</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Member Full Name
+              </label>
               <input
                 type="text"
                 placeholder="Full Name"
@@ -79,9 +91,26 @@ const GenerateCertificate = () => {
               />
             </div>
 
+            {/* Level */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Level
+              </label>
+              <select
+                value={level} // ✅ fixed binding
+                onChange={(e) => setLevel(e.target.value)}
+                className="w-full p-3 rounded-md bg-zinc-800 border border-zinc-700 text-white"
+              >
+                <option>State Level</option>
+                <option>District Level</option>
+              </select>
+            </div>
+
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Certificate Title</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Certificate Title
+              </label>
               <input
                 type="text"
                 value={title}
@@ -93,7 +122,9 @@ const GenerateCertificate = () => {
             {/* Date Range */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">From Date</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  From Date
+                </label>
                 <input
                   type="date"
                   value={fromDate}
@@ -102,7 +133,9 @@ const GenerateCertificate = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">To Date</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  To Date
+                </label>
                 <input
                   type="date"
                   value={toDate}
@@ -114,7 +147,9 @@ const GenerateCertificate = () => {
 
             {/* Weight Category */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Weight Category</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Weight Category
+              </label>
               <input
                 type="text"
                 value={weightcategory}
@@ -125,7 +160,9 @@ const GenerateCertificate = () => {
 
             {/* Weight Lift */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Weight Lift (kg)</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Weight Lift (kg)
+              </label>
               <input
                 type="text"
                 value={weightlift}
@@ -136,7 +173,9 @@ const GenerateCertificate = () => {
 
             {/* Place */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Place</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">
+                Place
+              </label>
               <input
                 type="text"
                 value={place}
@@ -174,13 +213,20 @@ const GenerateCertificate = () => {
                   {name || "Member Name"}
                 </span>{" "}
                 for outstanding dedication and performance in{" "}
-                <span className="text-yellow-400">{weightcategory}</span> category by lifting{" "}
+                <span className="text-yellow-400">{weightcategory}</span> category
+                by lifting{" "}
                 <span className="text-yellow-400">{weightlift}</span> at{" "}
-                <span className="text-yellow-400">{place}</span> during the period from{" "}
+                <span className="text-yellow-400">{place}</span> during the period
+                from{" "}
                 <span className="text-yellow-400">{fromDate || "..."}</span> to{" "}
                 <span className="text-yellow-400">{toDate || "..."}</span>.
               </p>
-              <p className="text-sm text-gray-500 mt-4 italic">~ AB Fitness Gym</p>
+              <p className="text-sm text-gray-500 mt-4 italic">
+                Level: {level}
+              </p>
+              <p className="text-sm text-gray-500 italic">
+                ~ AB Fitness Gym
+              </p>
             </div>
           </div>
         </div>

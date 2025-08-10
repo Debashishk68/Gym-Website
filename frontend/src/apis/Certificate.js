@@ -1,7 +1,7 @@
 import API_BASE_URL from "../config/api.js";
 
 export const certificateApi = async (data) => {
-  const { name, course, date, weightcategory, weightlift, place } = data;
+  const { name, course, date, weightcategory, weightlift, place,level } = data;
   try {
     const response = await fetch(`${API_BASE_URL}/api/certificate/generate`, {
       method: "POST",
@@ -16,6 +16,7 @@ export const certificateApi = async (data) => {
         weightcategory,
         weightlift,
         place,
+        level
       }),
     });
 

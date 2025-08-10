@@ -44,23 +44,40 @@ const SupplementInvoice = () => {
       },
     });
   };
+const handleWhatsAppClick = (sale) => {
+  // Format the sale date
+  const date = new Date(sale.createdAt).toLocaleDateString("en-IN");
 
-  const handleWhatsAppClick = (sale) => {
-    const date = new Date(sale.createdAt).toLocaleDateString("en-IN");
-    const message = `Hi ${
-      sale.customerName
-    },\nHere is your invoice for your supplement purchase:\n\nInvoice ID: ${sale._id.slice(
-      0,
-      8
-    )}\nDate: ${date}\nTotal: ₹${sale.total.toFixed(2)}\n\nDownload PDF: ${
-      sale.invoicePdf
-    }`;
+  // Shorten invoice ID
+  const invoiceId = sale._id.slice(0, 8);
 
-    const url = `https://wa.me/91${sale.mobileNumber}?text=${encodeURIComponent(
-      message
-    )}`;
-    window.open(url, "_blank");
-  };
+  // Format total amount
+  const total = sale.total.toFixed(2);
+
+  // Fallback for invoice PDF
+  const invoiceLink = sale.invoicePdf || "Invoice link not available";
+
+  // WhatsApp message text
+  const message = `Hi ${sale.customerName},
+
+Here is your invoice for your supplement purchase:
+
+Invoice ID: ${invoiceId}
+Date: ${date}
+Total: ₹${total}
+
+Download PDF: ${invoiceLink}`;
+
+  // Encode message for URL
+  const encodedMessage = encodeURIComponent(message);
+
+  // WhatsApp API link
+  const url = `https://api.whatsapp.com/send?phone=91${sale.mobileNumber}&text=${encodedMessage}`;
+
+  // Open WhatsApp chat in new tab
+  window.open(url, "_blank");
+};
+
 
   const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString("en-IN");
 

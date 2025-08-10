@@ -36,9 +36,11 @@ const generateCertificate = async (
   date,
   weightcategory,
   weightlift,
-  place
+  place,
+  level
 ) => {
-  const baseImagePath = path.resolve(__dirname, "templates", "base.png");
+  const image = level==="State Level"?"state.png":"destrict.png";
+  const baseImagePath = path.resolve(__dirname, "templates", image);
 
   if (!fs.existsSync(baseImagePath)) throw new Error("base.png not found");
 
@@ -50,13 +52,13 @@ const generateCertificate = async (
   ctx.drawImage(baseImage, 0, 0);
 
   // Draw certificate text
-  drawText(ctx, course, 3000, 1820, 180, "#3A6399");
-  drawText(ctx, name, 2200, 2160, 120);
-  drawText(ctx, course, 1320, 2330, 80);
-  drawText(ctx, date, 2900, 2330, 80);
-  drawText(ctx, weightcategory, 2100, 2890, 100);
-  drawText(ctx, weightlift, 3500, 2890, 100);
-  drawText(ctx, place, 4720, 2890, 100);
+  drawText(ctx, course, 960, 600, 80, "#3A6399");
+  drawText(ctx, name, 740, 740, 60);
+  drawText(ctx, course, 510, 845, 45);
+  drawText(ctx, date, 1520, 845, 40);
+  drawText(ctx, weightcategory, 700, 1033, 45);
+  drawText(ctx, weightlift, 1130, 1033, 45);
+  drawText(ctx, place, 1520, 1033,45);
 
   return canvas.toBuffer("image/png");
 };

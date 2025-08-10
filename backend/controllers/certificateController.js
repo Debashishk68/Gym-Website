@@ -7,7 +7,7 @@ const Client = require("../models/clientModel");
 
 const generateCertificateHandler = async (req, res) => {
   try {
-    const { name, course, date, weightcategory, weightlift, place } = req.body;
+    const { name, course, date, weightcategory, weightlift, place,level } = req.body;
     
     if (!name || !course) {
       return res.status(400).json({ message: "Name and course are required." });
@@ -19,7 +19,8 @@ const generateCertificateHandler = async (req, res) => {
       date,
       weightcategory,
       weightlift,
-      place
+      place,
+      level
     );
     res.setHeader("Content-Type", "image/png");
     res.setHeader(
