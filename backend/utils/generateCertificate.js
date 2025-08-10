@@ -54,11 +54,11 @@ const generateCertificate = async (
   // Draw certificate text
   drawText(ctx, course, 960, 600, 80, "#3A6399");
   drawText(ctx, name, 740, 740, 60);
-  drawText(ctx, course, 510, 845, 45);
-  drawText(ctx, date, 1520, 845, 40);
+  drawText(ctx, course, 510, 845, 40);
+  drawText(ctx, date, 1520, 845, 38);
   drawText(ctx, weightcategory, 700, 1033, 45);
   drawText(ctx, weightlift, 1130, 1033, 45);
-  drawText(ctx, place, 1520, 1033,45);
+  drawText(ctx, place, 1520, 1033,40);
 
   return canvas.toBuffer("image/png");
 };
