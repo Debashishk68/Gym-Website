@@ -45,9 +45,9 @@ export const useEditSuppliment = () => {
   });
 };
 
-export const useDeleteSupppliment = () => {
+export const useDeleteSupppliment = (id) => {
   return useMutation({
-    mutationFn: ({ id }) => DeleteSupplement({ id }),
+    mutationFn: (id) => DeleteSupplement(id),
     mutationKey: ["deleteSupplement"],
   });
 };

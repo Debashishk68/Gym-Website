@@ -9,7 +9,7 @@ const supplimentModel = require("../models/supplimentModel");
 
 const getInvoices = async (req, res) => {
   try {
-    const invoices = await invoiceModel.find();
+    const invoices = await invoiceModel.find().sort({ createdAt: -1 });
     res.status(200).json(invoices);
   } catch (error) {
     console.error("Error fetching invoices:", error.message);

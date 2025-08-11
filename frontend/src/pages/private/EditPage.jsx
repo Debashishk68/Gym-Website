@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FaUser, FaPhone, FaEnvelope, FaTrashAlt } from "react-icons/fa";
+import {
+  FaUser,
+  FaPhone,
+  FaEnvelope,
+  FaTrashAlt,
+  FaCalendarAlt,
+} from "react-icons/fa";
 import sushilGhimire from "../../assets/sushil-ghimire.jpg";
 import Navbar from "../../components/NavBar.jsx";
 import { SelectField } from "../../components/SelectedField.jsx";
@@ -38,9 +44,7 @@ const EditMemberForm = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [errors, setErrors] = useState({});
   const [renewPlan, setRenewPlan] = useState(false);
-  const defaultPlaceholder =
-    `https://ui-avatars.com/api/?name=${memberData?.client.fullname}&background=1a1a1a&color=ffc107&rounded=true`;
-
+  const defaultPlaceholder = `https://ui-avatars.com/api/?name=${memberData?.client.fullname}&background=1a1a1a&color=ffc107&rounded=true`;
 
   useEffect(() => {
     if (plansSuccess) {
@@ -70,10 +74,11 @@ const EditMemberForm = () => {
         notes: c.notes || "",
         profileImage: c.profilePic || "",
         planEndDate: c.membershipDeadline || "",
+        renewDate: c.renewDate || "",
       });
 
       if (c.profilePic) setImagePreview(c.profilePic);
-     
+
       if (c.membershipDeadline) {
         const today = new Date();
         const endDate = new Date(c.membershipDeadline);
@@ -89,7 +94,6 @@ const EditMemberForm = () => {
       navigate("/members");
     }
   }, [isSuccess]);
-  
 
   const selectedPlan = plans.find((p) => p.name === formData.membershipType);
   const planPrice = selectedPlan?.durations?.[0]?.price || 0;
@@ -230,12 +234,22 @@ const EditMemberForm = () => {
               onChange={handleChange}
               options={["Male", "Female", "Other"]}
             />
+
             <SelectField
               label="Plan"
               name="membershipType"
               value={formData.membershipType}
               onChange={handleChange}
               options={plans.map((p) => ({ value: p.name, label: p.name }))}
+            />
+            <InputField
+              label="Renew Date"
+              type="date"
+              name="renewDate"
+              value={formData.renewDate}
+              onChange={handleChange}
+              icon={<FaCalendarAlt />}
+              placeholder="Select renew date"
             />
           </div>
 

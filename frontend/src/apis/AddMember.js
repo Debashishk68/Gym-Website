@@ -52,6 +52,7 @@ export const EditMember = async ({ id, data, planPrice,renewPlan }) => {
   formData.append("address", data.address);
   formData.append("notes", data.notes);
   formData.append("renewPlan",renewPlan);
+  formData.append("renewDate",data.renewDate)
 
   if (data.profileImage instanceof File) {
     formData.append("file", data.profileImage);

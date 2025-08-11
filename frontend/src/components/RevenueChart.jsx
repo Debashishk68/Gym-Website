@@ -31,37 +31,32 @@ const RevenueChart = ({ label = "monthly" }) => {
   const [monthly, setMonthly] = useState([]);
   const [weekly, setWeekly] = useState([]);
   const [daily, setDaily] = useState([]);
-  const { data, isSuccess, isLoading, isError, error } = useRevenueChart();
+  const { data, isSuccess } = useRevenueChart();
 
   useEffect(() => {
     if (isSuccess) {
-      setMonthly(data.revenueByMonth);
-      setWeekly(data.revenueByWeek);
-      setDaily(data.dailyRevenue);
+      setMonthly(data.monthlyRevenue || []);
+      setWeekly(data.weeklyRevenue || []);
+      setDaily(data.dailyRevenue || []);
     }
-  }, [isSuccess]);
-  const monthLabels = Object.keys(monthly);
-  const monthData = Object.values(monthly);
-
-  const weeklyLabels = Object.keys(weekly);
-  const weeklyData = Object.values(weekly);
+  }, [isSuccess, data]);
 
   const getDayName = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", { weekday: "short" }); // e.g., "Mon"
-};
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", { weekday: "short" }); // "Mon"
+  };
 
   const datasets = {
     monthly: {
-      labels: monthLabels,
-      data: monthData,
+      labels: monthly.map((entry) => entry.month),
+      data: monthly.map((entry) => entry.totalRevenue),
     },
     weekly: {
-      labels: weeklyLabels,
-      data: weeklyData,
+      labels: weekly.map((entry) => entry.week),
+      data: weekly.map((entry) => entry.totalRevenue),
     },
     daily: {
-      labels: daily.map((entry) => getDayName(entry._id)),
+      labels: daily.map((entry) => getDayName(entry.date)),
       data: daily.map((entry) => entry.totalRevenue),
     },
   };
@@ -95,5 +90,7 @@ const RevenueChart = ({ label = "monthly" }) => {
     </div>
   );
 };
+
+
 
 export default RevenueChart;

@@ -76,14 +76,14 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
           <StatCard
             icon={<FaUserAlt className="text-3xl text-yellow-300" />}
-            value={`${data.clients || 0}+`}
+            value={`${data.clients || 0}`}
             label="Total Members"
             className="hover:scale-105 transition-transform duration-300 shadow-lg bg-white/10 backdrop-blur-md rounded-xl p-4"
           />
           <StatCard
             icon={<FaRupeeSign className="text-3xl text-green-300" />}
-            value={`₹${data.revenue || 0}+`}
-            label="Monthly Revenue"
+            value={`₹${data.revenue || 0}`}
+            label="Total Revenue"
             className="hover:scale-105 transition-transform duration-300 shadow-lg bg-white/10 backdrop-blur-md rounded-xl p-4"
           />
         </div>

@@ -5,7 +5,7 @@ import { IoMdRefresh } from "react-icons/io";
 import { useGenInvoice, useGetInvoice } from "../../hooks/useInvoice.js";
 import { useNavigate } from "react-router-dom";
 import { FiSearch } from "react-icons/fi";
-import  months  from "../../utils/months.js"; // Assuming you have a months.js file exporting an array of month objects
+import months from "../../utils/months.js"; // Assuming you have a months.js file exporting an array of month objects
 
 const statusColor = {
   Active: "text-green-300 bg-green-700/60",
@@ -18,14 +18,17 @@ const Invoices = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const today = new Date();
-  const [month, setMonth] = useState(String(today.getMonth() + 1).padStart(2, "0"));
+  const [month, setMonth] = useState(
+    String(today.getMonth() + 1).padStart(2, "0")
+  );
   const [year, setYear] = useState(String(today.getFullYear()));
 
+  const years = Array.from({ length: 5 }, (_, i) =>
+    String(today.getFullYear() - i)
+  );
 
-
-  const years = Array.from({ length: 5 }, (_, i) => String(today.getFullYear() - i));
-
-  const { data, isLoading, isSuccess, isError, error, refetch } = useGetInvoice();
+  const { data, isLoading, isSuccess, isError, error, refetch } =
+    useGetInvoice();
 
   const {
     mutate: GenInvoice,
@@ -50,69 +53,59 @@ const Invoices = () => {
       },
     });
   };
-const handleWhatsAppClick = async (invoice) => {
-  const date = new Date(invoice.date).toLocaleDateString("en-IN");
-  const invoiceId = invoice._id.slice(0, 8);
-  const amount = Number(invoice.amount).toFixed(2);
-  const status = invoice.status || "Not Available";
-  const link = invoice.invoicepdf || "No PDF";
+  const handleWhatsAppClick = (invoice) => {
+    // Format the invoice date
+    const date = new Date(invoice.createdAt).toLocaleDateString("en-IN");
 
-  const message = `Hi ${invoice.name},
+    // Shorten invoice ID
+    const invoiceId = invoice._id.slice(0, 8);
 
-Here is your invoice:
+    // Format total amount
+    const total = invoice.total.toFixed(2);
+
+    // Fallback for invoice PDF
+    const invoiceLink = invoice.invoicePdf || "Invoice link not available";
+
+    // WhatsApp message text
+    const message = `Hi ${invoice.customerName},
+
+Here is your invoice for your supplement purchase:
 
 Invoice ID: ${invoiceId}
 Date: ${date}
-Amount: ₹${amount}
-Status: ${status}
+Total: ₹${total}
 
-Download PDF: ${link}`;
+Download PDF: ${invoiceLink}`;
 
-  const response = await fetch("https://graph.facebook.com/v18.0/YOUR_PHONE_NUMBER_ID/messages", {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer YOUR_ACCESS_TOKEN",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      recipient_type: "individual",
-      to: `+91${invoice.whatsappNumber}`,
-      type: "text",
-      text: {
-        preview_url: true,
-        body: message
-      }
-    })
-  });
+    // Encode message for URL
+    const encodedMessage = encodeURIComponent(message);
 
-  const data = await response.json();
-  console.log("WhatsApp API response:", data);
-};
+    // WhatsApp API link
+    const url = `https://api.whatsapp.com/send?phone=91${invoice.mobileNumber}&text=${encodedMessage}`;
 
-
-
+    // Open WhatsApp chat in new tab
+    window.open(url, "_blank");
+  };
 
   const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString("en-IN");
 
   const invoices = isSuccess
-  ? data.filter((inv) => {
-      const date = new Date(inv.date);
-      const invoiceMonth = String(date.getMonth() + 1).padStart(2, "0");
-      const invoiceYear = String(date.getFullYear());
+    ? data.filter((inv) => {
+        const date = new Date(inv.date);
+        const invoiceMonth = String(date.getMonth() + 1).padStart(2, "0");
+        const invoiceYear = String(date.getFullYear());
 
-      const matchesMonthYear = invoiceMonth === month && invoiceYear === year;
-      const search = searchTerm.trim().toLowerCase();
+        const matchesMonthYear = invoiceMonth === month && invoiceYear === year;
+        const search = searchTerm.trim().toLowerCase();
 
-      const matchesSearch =
-        inv._id.toLowerCase().includes(search) ||
-        inv.name.toLowerCase().includes(search) ||
-        inv.whatsappNumber.includes(searchTerm);
+        const matchesSearch =
+          inv._id.toLowerCase().includes(search) ||
+          inv.name.toLowerCase().includes(search) ||
+          inv.whatsappNumber.includes(searchTerm);
 
-      return matchesMonthYear && matchesSearch;
-    })
-  : [];
-
+        return matchesMonthYear && matchesSearch;
+      })
+    : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
@@ -163,7 +156,9 @@ Download PDF: ${link}`;
         {isLoading ? (
           <p className="text-gray-400 animate-pulse">Loading invoices...</p>
         ) : isError ? (
-          <p className="text-red-500">Failed to load invoices: {error.message}</p>
+          <p className="text-red-500">
+            Failed to load invoices: {error.message}
+          </p>
         ) : (
           <>
             {isGenError && (
@@ -172,7 +167,9 @@ Download PDF: ${link}`;
               </p>
             )}
             {isGenSuccess && (
-              <p className="text-green-400 mb-4">Invoice PDF generated successfully.</p>
+              <p className="text-green-400 mb-4">
+                Invoice PDF generated successfully.
+              </p>
             )}
             <div className="overflow-x-auto rounded-xl border border-yellow-400/10">
               <table className="min-w-full table-auto text-sm text-left">
@@ -188,20 +185,29 @@ Download PDF: ${link}`;
                 </thead>
                 <tbody className="divide-y divide-zinc-700">
                   {invoices.map((invoice) => {
-                    const isGenerating = activeInvoiceId === invoice._id && isPending;
+                    const isGenerating =
+                      activeInvoiceId === invoice._id && isPending;
 
                     return (
-                      <tr key={invoice._id} className="hover:bg-zinc-800/50 transition">
+                      <tr
+                        key={invoice._id}
+                        className="hover:bg-zinc-800/50 transition"
+                      >
                         <td className="px-6 py-4 font-mono text-yellow-200 truncate max-w-[120px]">
                           {invoice._id.slice(0, 8).toUpperCase()}
                         </td>
-                        <td className="px-6 py-4 truncate max-w-[140px]">{invoice.name}</td>
-                        <td className="px-6 py-4">{formatDate(invoice.date)}</td>
+                        <td className="px-6 py-4 truncate max-w-[140px]">
+                          {invoice.name}
+                        </td>
+                        <td className="px-6 py-4">
+                          {formatDate(invoice.date)}
+                        </td>
                         <td className="px-6 py-4">₹{invoice.amount}</td>
                         <td className="px-6 py-4">
                           <span
                             className={`px-3 py-1 rounded-full text-sm font-semibold shadow ${
-                              statusColor[invoice.status] || "bg-gray-700 text-white"
+                              statusColor[invoice.status] ||
+                              "bg-gray-700 text-white"
                             }`}
                           >
                             {invoice.status}
@@ -243,7 +249,9 @@ Download PDF: ${link}`;
             <div className="mt-6 text-right">
               <p className="text-sm text-gray-400">
                 Total Invoices:{" "}
-                <span className="text-white font-semibold">{invoices.length}</span>
+                <span className="text-white font-semibold">
+                  {invoices.length}
+                </span>
               </p>
             </div>
           </>

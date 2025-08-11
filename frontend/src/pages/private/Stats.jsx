@@ -11,7 +11,7 @@ import {
   Filler,
 } from "chart.js";
 import Navbar from "../../components/NavBar.jsx";
-import { useRevenueChart } from "../../hooks/useRevenueChart.js"; // adjust path
+import { useRevenueChart } from "../../hooks/useRevenueChart.js";
 import { useNavigate } from "react-router-dom";
 
 ChartJS.register(
@@ -26,16 +26,17 @@ ChartJS.register(
 
 const RevenueTrends = () => {
   const [range, setRange] = useState("monthly");
-  const [monthly, setMonthly] = useState({});
-  const [weekly, setWeekly] = useState({});
+  const [monthly, setMonthly] = useState([]);
+  const [weekly, setWeekly] = useState([]);
   const [daily, setDaily] = useState([]);
   const navigate = useNavigate();
-  const { data, isSuccess, isLoading, isError, error } = useRevenueChart();
 
+  const { data, isSuccess, isLoading, isError, error } = useRevenueChart();
+console.log(data)
   useEffect(() => {
     if (isSuccess) {
-      setMonthly(data.revenueByMonth || {});
-      setWeekly(data.revenueByWeek || {});
+      setMonthly(data.monthlyRevenue || []);
+      setWeekly(data.weeklyRevenue || []);
       setDaily(data.dailyRevenue || []);
     }
   }, [isSuccess, data]);
@@ -45,22 +46,23 @@ const RevenueTrends = () => {
     return date.toLocaleDateString("en-US", { weekday: "short" });
   };
 
-  const datasets = {
-    monthly: {
-      labels: Object.keys(monthly),
-      data: Object.values(monthly),
-    },
-    weekly: {
-      labels: Object.keys(weekly),
-      data: Object.values(weekly),
-    },
-    daily: {
-      labels: daily.map((d) => getDayName(d._id)),
-      data: daily.map((d) => d.totalRevenue),
-    },
-  };
+const datasets = {
+  monthly: {
+    labels: monthly.map((m) => m.month), // backend sends "month" like "Sep"
+    data: monthly.map((m) => m.totalRevenue),
+  },
+  weekly: {
+    labels: weekly.map((w) => w.week), // backend sends "week" like "Week 32 (2025)"
+    data: weekly.map((w) => w.totalRevenue),
+  },
+  daily: {
+    labels: daily.map((d) => getDayName(d.date)), // backend sends "date"
+    data: daily.map((d) => d.totalRevenue),
+  },
+};
 
-  const selected = datasets[range];
+
+  const selected = datasets[range] || { labels: [], data: [] };
 
   const latestIndex = selected.data.length - 1;
   const latestRevenue = selected.data[latestIndex] || 0;
@@ -153,14 +155,12 @@ const RevenueTrends = () => {
           <h2 className="text-xl font-semibold text-yellow-400 mb-1">
             {range.charAt(0).toUpperCase() + range.slice(1)} Revenue
           </h2>
-          <div className="flex items-center  text-white text-4xl font-bold mt-2">
+          <div className="flex items-center text-white text-4xl font-bold mt-2">
             <span>₹{latestRevenue.toLocaleString()}</span>
             <span className="text-xl text-gray-400 font-medium ml-4">
               {latestLabel}
             </span>
           </div>
-         
-          {/* <p className="text-sm text-green-400 mb-4">This {range} +12%</p> */}
 
           {isLoading ? (
             <p className="text-gray-400 mt-4">Loading chart...</p>

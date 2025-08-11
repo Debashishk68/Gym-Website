@@ -5,13 +5,9 @@ const axios = require("axios");
 
 // console.log(path.join(__dirname, "fonts", "Tinos-Regular.ttf"))
 // Register Roboto_SemiCondensed-Regular font
-registerFont(
-  path.join(__dirname, "../fonts/Poppins-Regular.ttf"),
-  {
-    family: "PoppinsCustom",
-  }
-);
-
+registerFont(path.join(__dirname, "../fonts/Poppins-Regular.ttf"), {
+  family: "PoppinsCustom",
+});
 
 // Helper function to draw styled text
 function drawText(
@@ -39,7 +35,7 @@ const generateCertificate = async (
   place,
   level
 ) => {
-  const image = level==="State Level"?"state.png":"destrict.png";
+  const image = level === "State Level" ? "state.png" : "destrict.png";
   const baseImagePath = path.resolve(__dirname, "templates", image);
 
   if (!fs.existsSync(baseImagePath)) throw new Error("base.png not found");
@@ -52,13 +48,14 @@ const generateCertificate = async (
   ctx.drawImage(baseImage, 0, 0);
 
   // Draw certificate text
-  drawText(ctx, course, 960, 600, 80, "#3A6399");
-  drawText(ctx, name, 740, 740, 60);
+  // drawText(ctx, "CHAMPIONSHIP", 960, 430, 80, "#3A6399");
+  drawText(ctx, `${course} CHAMPIONSHIP`, 960, 600, 60, "#3A6399");
+  drawText(ctx, name, 740, 740, 50);
   drawText(ctx, course, 510, 845, 40);
   drawText(ctx, date, 1520, 845, 35);
   drawText(ctx, weightcategory, 700, 1033, 45);
   drawText(ctx, weightlift, 1130, 1033, 45);
-  drawText(ctx, place, 1520, 1033,40);
+  drawText(ctx, place, 1520, 1033, 40);
 
   return canvas.toBuffer("image/png");
 };

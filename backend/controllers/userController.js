@@ -104,7 +104,7 @@ const addClient = async (req, res) => {
       amount: planPrice,
       date: createdAt,
       status: status,
-      discount:discount||0,
+      discount: discount || 0,
       whatsappNumber: phone,
     });
     await newInvoice.save();
@@ -138,6 +138,7 @@ const editClient = async (req, res) => {
       address,
       notes,
       renewPlan,
+      renewDate
     } = req.body;
 
     // Check for required fields
@@ -202,7 +203,7 @@ const editClient = async (req, res) => {
     // Handle plan renewal if applicable
     if (renewPlan === true || renewPlan === "true") {
       const planLower = plan.trim().toLowerCase();
-      const startDate = new Date();
+      const startDate = new Date(renewDate);
       const membershipDeadline = new Date(startDate);
 
       switch (planLower) {
@@ -294,75 +295,91 @@ const membersInfo = async (req, res) => {
 
 const dashboard = async (req, res) => {
   try {
-    const clients = await Client.find();
+    const clients = await Client.find().lean();
+    const invoices = await invoiceModel.find().lean();
 
-    res.send({
+    const totalRevenue = invoices.reduce((total, invoice) => {
+      return total + (Number(invoice.amount) || 0);
+    }, 0);
+
+    res.json({
       clients: clients.length || 0,
-      revenue: clients.reduce((total, client) => {
-        return total + (client.planPrice || 0);
-      }, 0),
+      revenue: totalRevenue,
     });
   } catch (error) {
-    console.error("Error fetching clients:", error);
-    return res
+    console.error("Error fetching dashboard data:", error);
+    res
       .status(500)
-      .json({ message: "Server error while fetching clients" });
+      .json({ message: "Server error while fetching dashboard data" });
   }
 };
+
 const revenueChart = async (req, res) => {
   try {
-    const monthlyRevenue = await Client.aggregate([
+    const today = new Date();
+    const lastYear = new Date();
+    lastYear.setFullYear(today.getFullYear() - 1);
+
+    // ================== MONTHLY REVENUE ==================
+    const monthlyRevenueData = await invoiceModel.aggregate([
       {
-        $addFields: {
-          monthNum: { $month: "$createdAt" },
+        $match: {
+          createdAt: { $gte: lastYear, $lte: today },
         },
       },
       {
-        $group: {
-          _id: "$monthNum",
-          totalRevenue: { $sum: "$planPrice" },
-        },
-      },
-      {
         $addFields: {
-          monthName: {
-            $arrayElemAt: [
-              [
-                "",
-                "Jan",
-                "Feb",
-                "Mar",
-                "Apr",
-                "May",
-                "Jun",
-                "Jul",
-                "Aug",
-                "Sep",
-                "Oct",
-                "Nov",
-                "Dec",
-              ],
-              "$_id",
-            ],
+          yearMonth: {
+            $dateToString: {
+              format: "%Y-%m",
+              date: "$createdAt",
+              timezone: "Asia/Kolkata", // match your local time zone
+            },
           },
         },
       },
       {
-        $project: {
-          _id: 0,
-          month: "$monthName",
-          totalRevenue: 1,
+        $group: {
+          _id: "$yearMonth",
+          totalRevenue: { $sum: "$amount" },
         },
       },
-      {
-        $sort: { monthNum: 1 },
-      },
+      { $sort: { _id: 1 } },
     ]);
 
-    const fourWeeksAgo = new Date();
-    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 27); // Past 28 days (inclusive)
+    // Generate last 12 months with the SAME format as $dateToString
+    function getLast12Months() {
+      const months = [];
+      const date = new Date();
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+          2,
+          "0"
+        )}`; // YYYY-MM
+        months.push({
+          month: d.toLocaleString("default", { month: "short" }),
+          yearMonth: key,
+          totalRevenue: 0,
+        });
+      }
+      return months;
+    }
 
-    const weeklyRevenue = await Client.aggregate([
+    const monthsTemplate = getLast12Months();
+    const revenueMap = new Map(
+      monthlyRevenueData.map((r) => [r._id, r.totalRevenue])
+    );
+    const monthlyRevenue = monthsTemplate.map((m) => ({
+      month: m.month,
+      totalRevenue: revenueMap.get(m.yearMonth) || 0,
+    }));
+
+    // ================== WEEKLY REVENUE ==================
+    const fourWeeksAgo = new Date();
+    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 27);
+
+    const weeklyRevenue = await invoiceModel.aggregate([
       {
         $match: {
           createdAt: { $gte: fourWeeksAgo },
@@ -380,18 +397,15 @@ const revenueChart = async (req, res) => {
             week: "$isoWeek",
             year: "$isoYear",
           },
-          totalRevenue: { $sum: "$planPrice" },
+          totalRevenue: { $sum: "$amount" },
         },
       },
       {
-        $sort: {
-          "_id.year": 1,
-          "_id.week": 1,
-        },
+        $sort: { "_id.year": 1, "_id.week": 1 },
       },
       {
         $addFields: {
-          weekLabel: {
+          week: {
             $concat: [
               "Week ",
               { $toString: "$_id.week" },
@@ -403,20 +417,18 @@ const revenueChart = async (req, res) => {
         },
       },
       {
-        $project: {
-          _id: 0,
-          week: "$weekLabel",
-          totalRevenue: 1,
-        },
+        $project: { _id: 0, week: 1, totalRevenue: 1 },
       },
     ]);
 
-    const dailyRevenue = await Client.aggregate([
+    // ================== DAILY REVENUE ==================
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+
+    const dailyRevenueData = await invoiceModel.aggregate([
       {
         $match: {
-          createdAt: {
-            $gte: new Date(new Date().setDate(new Date().getDate() - 6)), // past 7 days including today
-          },
+          createdAt: { $gte: sevenDaysAgo },
         },
       },
       {
@@ -429,38 +441,49 @@ const revenueChart = async (req, res) => {
       {
         $group: {
           _id: "$date",
-          totalRevenue: { $sum: "$planPrice" },
+          totalRevenue: { $sum: "$amount" },
         },
       },
-      {
-        $sort: { _id: 1 },
-      },
+      { $sort: { _id: 1 } },
     ]);
 
-    // Convert to object format like { "2025-07-01": 1500, ... }
-    const revenueByDay = {};
-    dailyRevenue.forEach(({ _id, totalRevenue }) => {
-      revenueByDay[_id] = totalRevenue;
-    });
+    // Fill missing daily dates
+    function getLast7Days() {
+      const days = [];
+      const date = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(date);
+        d.setDate(date.getDate() - i);
+        const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
+        days.push({
+          date: key,
+          totalRevenue: 0,
+        });
+      }
+      return days;
+    }
 
-    // Convert to object format like { "Week 1": 1500, ... }
-    const revenueByWeek = {};
-    weeklyRevenue.forEach(({ week, totalRevenue }) => {
-      revenueByWeek[week] = totalRevenue;
-    });
+    const daysTemplate = getLast7Days();
+    const dailyMap = new Map(
+      dailyRevenueData.map((r) => [r._id, r.totalRevenue])
+    );
+    const dailyRevenue = daysTemplate.map((d) => ({
+      date: d.date,
+      totalRevenue: dailyMap.get(d.date) || 0,
+    }));
 
-    // Convert array to object like { Jan: 1500, Feb: 2100, ... }
-    const revenueByMonth = {};
-    monthlyRevenue.forEach(({ month, totalRevenue }) => {
-      revenueByMonth[month] = totalRevenue;
+    // ================== RESPONSE ==================
+    res.json({
+      monthlyRevenue,
+      weeklyRevenue,
+      dailyRevenue,
     });
-
-    res.send({ revenueByMonth, revenueByWeek, dailyRevenue });
   } catch (error) {
-    console.error("Revenue Error:", error);
-    res.status(500).json({ message: "Error calculating monthly revenue." });
+    console.error(error);
+    res.status(500).json({ message: "Error fetching revenue data" });
   }
 };
+
 const addPlan = async (req, res) => {
   try {
     const { name, durations } = req.body;
@@ -683,7 +706,6 @@ const clientJoinChart = async (req, res) => {
     res.status(500).json({ message: "Error calculating client join trends." });
   }
 };
-
 
 module.exports = {
   addClient,

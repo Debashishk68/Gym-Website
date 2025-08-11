@@ -94,7 +94,7 @@ const EditSupplement = () => {
           <div className="flex justify-between mt-8">
             <button
               type="button"
-              onClick={() => navigate("/cart")}
+              onClick={() => navigate("/stock")}
               className="px-5 py-2 rounded-lg border border-zinc-600 text-zinc-300 hover:bg-zinc-800 transition"
             >
               Cancel
