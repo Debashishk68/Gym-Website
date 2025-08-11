@@ -54,6 +54,7 @@ const Invoices = () => {
     });
   };
   const handleWhatsAppClick = (invoice) => {
+    console.log(invoice);
     // Format the invoice date
     const date = new Date(invoice.createdAt).toLocaleDateString("en-IN");
 
@@ -61,13 +62,13 @@ const Invoices = () => {
     const invoiceId = invoice._id.slice(0, 8);
 
     // Format total amount
-    const total = invoice.total.toFixed(2);
+    const total = invoice.amount.toFixed(2);
 
     // Fallback for invoice PDF
-    const invoiceLink = invoice.invoicePdf || "Invoice link not available";
+    const invoiceLink = invoice.invoicepdf || "Invoice link not available";
 
     // WhatsApp message text
-    const message = `Hi ${invoice.customerName},
+    const message = `Hi ${invoice.name},
 
 Here is your invoice for your supplement purchase:
 
@@ -81,7 +82,7 @@ Download PDF: ${invoiceLink}`;
     const encodedMessage = encodeURIComponent(message);
 
     // WhatsApp API link
-    const url = `https://api.whatsapp.com/send?phone=91${invoice.mobileNumber}&text=${encodedMessage}`;
+    const url = `https://api.whatsapp.com/send?phone=91${invoice.whatsappNumber}&text=${encodedMessage}`;
 
     // Open WhatsApp chat in new tab
     window.open(url, "_blank");
