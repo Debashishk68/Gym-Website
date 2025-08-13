@@ -40,6 +40,7 @@ const EditMemberForm = () => {
     notes: "",
     profileImage: "",
     planEndDate: "",
+    discount:"",
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [errors, setErrors] = useState({});
@@ -96,7 +97,9 @@ const EditMemberForm = () => {
   }, [isSuccess]);
 
   const selectedPlan = plans.find((p) => p.name === formData.membershipType);
-  const planPrice = selectedPlan?.durations?.[0]?.price || 0;
+   const rawPrice = selectedPlan?.durations?.[0]?.price || 0;
+  const discountPercent = parseFloat(formData.discount) || 0;
+  const planPrice = rawPrice - (rawPrice * discountPercent) / 100;
   const planDuration = selectedPlan?.durations?.[0]?.months;
 
   const handleChange = (e) => {
@@ -122,7 +125,6 @@ const EditMemberForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-
     editMember({ id, data: formData, planPrice, renewPlan });
   };
 
@@ -233,6 +235,15 @@ const EditMemberForm = () => {
               value={formData.gender}
               onChange={handleChange}
               options={["Male", "Female", "Other"]}
+            />
+             <InputField
+              label="Discount (%)"
+              name="discount"
+              type="number"
+              value={formData.discount}
+              onChange={handleChange}
+              error={errors.discount}
+              placeholder="e.g. 10"
             />
 
             <SelectField

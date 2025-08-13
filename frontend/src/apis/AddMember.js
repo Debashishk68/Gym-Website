@@ -15,7 +15,7 @@ export const AddMember = async (data) => {
   formData.append("status", data.formData.status);
   formData.append("address", data.formData.address);
   formData.append("notes", data.formData.notes);
-  formData.append("discount",data.formData.discount);
+  formData.append("discount", data.formData.discount);
 
   try {
     const response = await fetch(`${API_BASE_URL}/dashboard/add-profile`, {
@@ -37,7 +37,7 @@ export const AddMember = async (data) => {
   }
 };
 
-export const EditMember = async ({ id, data, planPrice,renewPlan }) => {
+export const EditMember = async ({ id, data, planPrice, renewPlan }) => {
   const formData = new FormData();
   formData.append("fullname", data.name);
   formData.append("email", data.email);
@@ -51,8 +51,9 @@ export const EditMember = async ({ id, data, planPrice,renewPlan }) => {
   formData.append("status", data.status);
   formData.append("address", data.address);
   formData.append("notes", data.notes);
-  formData.append("renewPlan",renewPlan);
-  formData.append("renewDate",data.renewDate)
+  formData.append("discount", data.discount);
+  formData.append("renewPlan", renewPlan);
+  formData.append("renewDate", data.renewDate);
 
   if (data.profileImage instanceof File) {
     formData.append("file", data.profileImage);
@@ -98,4 +99,3 @@ export const deleteMember = async (id) => {
     throw error;
   }
 };
-

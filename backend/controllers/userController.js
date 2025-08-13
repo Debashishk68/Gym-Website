@@ -134,11 +134,12 @@ const editClient = async (req, res) => {
       plan,
       planPrice,
       emergencyContact,
+      discount,
       status,
       address,
       notes,
       renewPlan,
-      renewDate
+      renewDate,
     } = req.body;
 
     // Check for required fields
@@ -226,6 +227,7 @@ const editClient = async (req, res) => {
       client.plan = plan;
       client.planPrice = planPrice;
       client.membershipDeadline = membershipDeadline;
+      
 
       // Create invoice
       const newInvoice = new invoiceModel({
@@ -235,6 +237,7 @@ const editClient = async (req, res) => {
         date: Date.now(),
         status: status,
         whatsappNumber: phone,
+        discount:discount
       });
       await newInvoice.save();
     }

@@ -51,7 +51,7 @@ const generateCertificate = async (
   // drawText(ctx, "CHAMPIONSHIP", 960, 430, 80, "#3A6399");
   drawText(ctx, `${course} CHAMPIONSHIP`, 960, 600, 60, "#3A6399");
   drawText(ctx, name, 740, 740, 50);
-  drawText(ctx, course, 510, 845, 40);
+  drawText(ctx, course, 470, 845, 40);
   drawText(ctx, date, 1520, 845, 35);
   drawText(ctx, weightcategory, 700, 1033, 45);
   drawText(ctx, weightlift, 1130, 1033, 45);
