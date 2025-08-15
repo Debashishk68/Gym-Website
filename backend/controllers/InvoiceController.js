@@ -95,7 +95,7 @@ const generateInvoicePdf = async (req, res) => {
           <h1>Tax Invoice</h1>
           <div class="info-section">
             <p><strong>Member Name:</strong> ${invoice.name}</p>
-            <p><strong>Date of Admission:</strong> ${formattedDate}</p>
+            <p><strong>Date of Admission/RenewDate:</strong> ${formattedDate}</p>
             <p><strong>Invoice ID:</strong> ${invoice._id.toUpperCase()}</p>
             <p><strong>Address:</strong> ${
               invoiceData.memberId?.address || "Not Provided"
