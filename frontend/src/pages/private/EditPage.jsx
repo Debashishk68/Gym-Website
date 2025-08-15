@@ -99,7 +99,7 @@ const EditMemberForm = () => {
   const selectedPlan = plans.find((p) => p.name === formData.membershipType);
    const rawPrice = selectedPlan?.durations?.[0]?.price || 0;
   const discountPercent = parseFloat(formData.discount) || 0;
-  const planPrice = rawPrice ;
+  const planPrice = rawPrice - (rawPrice * discountPercent) / 100;
   const planDuration = selectedPlan?.durations?.[0]?.months;
 
   const handleChange = (e) => {
@@ -125,7 +125,7 @@ const EditMemberForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    editMember({ id, data: formData, planPrice, renewPlan });
+    editMember({ id, data: formData, planPrice:rawPrice, renewPlan });
   };
 
   if (loadingMember)
