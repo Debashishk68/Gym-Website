@@ -42,9 +42,7 @@ const generateInvoicePdf = async (req, res) => {
       .findById(invoice._id)
       .populate("memberId");
 
-    c
     const MembershipDate = new Date(invoiceData.memberId?.membershipDeadline).toLocaleDateString("en-IN");
-
     const planDurations = {
       Platinum: "12 months",
       Gold: "6 months",
