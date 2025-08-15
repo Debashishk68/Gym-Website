@@ -50,7 +50,7 @@ const AddMemberForm = () => {
   );
   const rawPrice = selectedPlan?.durations?.[0]?.price || 0;
   const discountPercent = parseFloat(formData.discount) || 0;
-  const planPrice = rawPrice - (rawPrice * discountPercent) / 100;
+  const planPrice = rawPrice ;
 
   const planDuration = selectedPlan?.durations?.[0]?.months;
 

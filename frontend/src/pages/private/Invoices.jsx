@@ -5,7 +5,7 @@ import { IoMdRefresh } from "react-icons/io";
 import { useGenInvoice, useGetInvoice } from "../../hooks/useInvoice.js";
 import { useNavigate } from "react-router-dom";
 import { FiSearch } from "react-icons/fi";
-import months from "../../utils/months.js"; // Assuming you have a months.js file exporting an array of month objects
+import months from "../../utils/months.js"; // Assuming months.js exports array of { value, label }
 
 const statusColor = {
   Active: "text-green-300 bg-green-700/60",
@@ -18,18 +18,14 @@ const Invoices = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const today = new Date();
-  const [month, setMonth] = useState(
-    String(today.getMonth() + 1).padStart(2, "0")
-  );
-  const [year, setYear] = useState(String(today.getFullYear()));
+  const [month, setMonth] = useState(""); // Empty means "All months"
+  const [year, setYear] = useState("");   // Empty means "All years"
 
   const years = Array.from({ length: 5 }, (_, i) =>
     String(today.getFullYear() - i)
   );
 
-  const { data, isLoading, isSuccess, isError, error, refetch } =
-    useGetInvoice();
-
+  const { data, isLoading, isSuccess, isError, error, refetch } = useGetInvoice();
   const {
     mutate: GenInvoice,
     isPending,
@@ -53,21 +49,13 @@ const Invoices = () => {
       },
     });
   };
+
   const handleWhatsAppClick = (invoice) => {
-    console.log(invoice);
-    // Format the invoice date
     const date = new Date(invoice.createdAt).toLocaleDateString("en-IN");
-
-    // Shorten invoice ID
     const invoiceId = invoice._id.slice(0, 8);
-
-    // Format total amount
     const total = invoice.amount.toFixed(2);
-
-    // Fallback for invoice PDF
     const invoiceLink = invoice.invoicepdf || "Invoice link not available";
 
-    // WhatsApp message text
     const message = `Hi ${invoice.name},
 
 Here is your invoice for your supplement purchase:
@@ -78,13 +66,8 @@ Total: ₹${total}
 
 Download PDF: ${invoiceLink}`;
 
-    // Encode message for URL
     const encodedMessage = encodeURIComponent(message);
-
-    // WhatsApp API link
     const url = `https://api.whatsapp.com/send?phone=91${invoice.whatsappNumber}&text=${encodedMessage}`;
-
-    // Open WhatsApp chat in new tab
     window.open(url, "_blank");
   };
 
@@ -96,9 +79,12 @@ Download PDF: ${invoiceLink}`;
         const invoiceMonth = String(date.getMonth() + 1).padStart(2, "0");
         const invoiceYear = String(date.getFullYear());
 
-        const matchesMonthYear = invoiceMonth === month && invoiceYear === year;
-        const search = searchTerm.trim().toLowerCase();
+        // Only filter by month/year if a value is selected
+        const matchesMonthYear =
+          (!month || invoiceMonth === month) &&
+          (!year || invoiceYear === year);
 
+        const search = searchTerm.trim().toLowerCase();
         const matchesSearch =
           inv._id.toLowerCase().includes(search) ||
           inv.name.toLowerCase().includes(search) ||
@@ -133,6 +119,7 @@ Download PDF: ${invoiceLink}`;
               onChange={(e) => setMonth(e.target.value)}
               className="bg-zinc-800 text-yellow-200 border border-yellow-400 rounded-md px-3 py-2 text-sm"
             >
+              <option value="">All Months</option>
               {months.map((m) => (
                 <option key={m.value} value={m.value}>
                   {m.label}
@@ -145,6 +132,7 @@ Download PDF: ${invoiceLink}`;
               onChange={(e) => setYear(e.target.value)}
               className="bg-zinc-800 text-yellow-200 border border-yellow-400 rounded-md px-3 py-2 text-sm"
             >
+              <option value="">All Years</option>
               {years.map((y) => (
                 <option key={y} value={y}>
                   {y}
@@ -200,15 +188,12 @@ Download PDF: ${invoiceLink}`;
                         <td className="px-6 py-4 truncate max-w-[140px]">
                           {invoice.name}
                         </td>
-                        <td className="px-6 py-4">
-                          {formatDate(invoice.date)}
-                        </td>
+                        <td className="px-6 py-4">{formatDate(invoice.date)}</td>
                         <td className="px-6 py-4">₹{invoice.amount}</td>
                         <td className="px-6 py-4">
                           <span
                             className={`px-3 py-1 rounded-full text-sm font-semibold shadow ${
-                              statusColor[invoice.status] ||
-                              "bg-gray-700 text-white"
+                              statusColor[invoice.status] || "bg-gray-700 text-white"
                             }`}
                           >
                             {invoice.status}
@@ -250,9 +235,7 @@ Download PDF: ${invoiceLink}`;
             <div className="mt-6 text-right">
               <p className="text-sm text-gray-400">
                 Total Invoices:{" "}
-                <span className="text-white font-semibold">
-                  {invoices.length}
-                </span>
+                <span className="text-white font-semibold">{invoices.length}</span>
               </p>
             </div>
           </>
