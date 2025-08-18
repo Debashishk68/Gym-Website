@@ -340,7 +340,10 @@ const revenueChart = async (req, res) => {
             },
           },
           netAmount: {
-            $subtract: ["$amount", { $ifNull: ["$discount", 0] }],
+            $subtract: [
+              "$amount",
+              { $multiply: ["$amount", { $divide: [{ $ifNull: ["$discount", 0] }, 100] }] }
+            ]
           },
         },
       },
@@ -353,18 +356,14 @@ const revenueChart = async (req, res) => {
       { $sort: { _id: 1 } },
     ]);
 
-    // Fill 12 months
     function getLast12Months() {
       const months = [];
       const date = new Date();
       for (let i = 11; i >= 0; i--) {
         const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-          2,
-          "0"
-        )}`;
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         months.push({
-          month: d.toLocaleString("default", { month: "short" }),
+          month: d.toLocaleString("en-US", { month: "short" }),
           yearMonth: key,
           totalRevenue: 0,
         });
@@ -373,9 +372,7 @@ const revenueChart = async (req, res) => {
     }
 
     const monthsTemplate = getLast12Months();
-    const revenueMap = new Map(
-      monthlyRevenueData.map((r) => [r._id, r.totalRevenue])
-    );
+    const revenueMap = new Map(monthlyRevenueData.map((r) => [r._id, r.totalRevenue]));
     const monthlyRevenue = monthsTemplate.map((m) => ({
       month: m.month,
       totalRevenue: revenueMap.get(m.yearMonth) || 0,
@@ -383,9 +380,9 @@ const revenueChart = async (req, res) => {
 
     // ================== WEEKLY REVENUE ==================
     const fourWeeksAgo = new Date();
-    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 27);
+    fourWeeksAgo.setDate(today.getDate() - 27); // last 4 weeks
 
-    const weeklyRevenue = await invoiceModel.aggregate([
+    const weeklyRevenueData = await invoiceModel.aggregate([
       {
         $match: {
           createdAt: { $gte: fourWeeksAgo },
@@ -396,7 +393,10 @@ const revenueChart = async (req, res) => {
           isoWeek: { $isoWeek: "$createdAt" },
           isoYear: { $isoWeekYear: "$createdAt" },
           netAmount: {
-            $subtract: ["$amount", { $ifNull: ["$discount", 0] }],
+            $subtract: [
+              "$amount",
+              { $multiply: ["$amount", { $divide: [{ $ifNull: ["$discount", 0] }, 100] }] }
+            ]
           },
         },
       },
@@ -425,7 +425,7 @@ const revenueChart = async (req, res) => {
 
     // ================== DAILY REVENUE ==================
     const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setDate(today.getDate() - 6); // last 7 days
 
     const dailyRevenueData = await invoiceModel.aggregate([
       {
@@ -435,9 +435,18 @@ const revenueChart = async (req, res) => {
       },
       {
         $addFields: {
-          date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          date: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "Asia/Kolkata",
+            },
+          },
           netAmount: {
-            $subtract: ["$amount", { $ifNull: ["$discount", 0] }],
+            $subtract: [
+              "$amount",
+              { $multiply: ["$amount", { $divide: [{ $ifNull: ["$discount", 0] }, 100] }] }
+            ]
           },
         },
       },
@@ -450,14 +459,13 @@ const revenueChart = async (req, res) => {
       { $sort: { _id: 1 } },
     ]);
 
-    // Fill 7 days
     function getLast7Days() {
       const days = [];
       const date = new Date();
       for (let i = 6; i >= 0; i--) {
         const d = new Date(date);
         d.setDate(date.getDate() - i);
-        const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
+        const key = d.toLocaleDateString("en-CA"); // YYYY-MM-DD
         days.push({
           date: key,
           totalRevenue: 0,
@@ -467,9 +475,7 @@ const revenueChart = async (req, res) => {
     }
 
     const daysTemplate = getLast7Days();
-    const dailyMap = new Map(
-      dailyRevenueData.map((r) => [r._id, r.totalRevenue])
-    );
+    const dailyMap = new Map(dailyRevenueData.map((r) => [r._id, r.totalRevenue]));
     const dailyRevenue = daysTemplate.map((d) => ({
       date: d.date,
       totalRevenue: dailyMap.get(d.date) || 0,
@@ -478,7 +484,7 @@ const revenueChart = async (req, res) => {
     // ================== RESPONSE ==================
     res.json({
       monthlyRevenue,
-      weeklyRevenue,
+      weeklyRevenue: weeklyRevenueData,
       dailyRevenue,
     });
   } catch (error) {
@@ -486,6 +492,9 @@ const revenueChart = async (req, res) => {
     res.status(500).json({ message: "Error fetching revenue data" });
   }
 };
+
+
+
 
 const addPlan = async (req, res) => {
   try {
