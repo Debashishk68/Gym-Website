@@ -302,7 +302,10 @@ const dashboard = async (req, res) => {
     const invoices = await invoiceModel.find().lean();
 
     const totalRevenue = invoices.reduce((total, invoice) => {
-      return total + (Number(invoice.amount) || 0);
+      const amount = Number(invoice.amount) || 0;
+      const discount = Number(invoice.discount) || 0;
+      const discountedAmount = amount - (amount * discount) / 100;
+      return total + discountedAmount;
     }, 0);
 
     res.json({
@@ -492,9 +495,6 @@ const revenueChart = async (req, res) => {
     res.status(500).json({ message: "Error fetching revenue data" });
   }
 };
-
-
-
 
 const addPlan = async (req, res) => {
   try {

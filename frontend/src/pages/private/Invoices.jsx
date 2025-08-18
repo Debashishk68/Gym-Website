@@ -19,13 +19,14 @@ const Invoices = () => {
 
   const today = new Date();
   const [month, setMonth] = useState(""); // Empty means "All months"
-  const [year, setYear] = useState("");   // Empty means "All years"
+  const [year, setYear] = useState(""); // Empty means "All years"
 
   const years = Array.from({ length: 5 }, (_, i) =>
     String(today.getFullYear() - i)
   );
 
-  const { data, isLoading, isSuccess, isError, error, refetch } = useGetInvoice();
+  const { data, isLoading, isSuccess, isError, error, refetch } =
+    useGetInvoice();
   const {
     mutate: GenInvoice,
     isPending,
@@ -81,8 +82,7 @@ Download PDF: ${invoiceLink}`;
 
         // Only filter by month/year if a value is selected
         const matchesMonthYear =
-          (!month || invoiceMonth === month) &&
-          (!year || invoiceYear === year);
+          (!month || invoiceMonth === month) && (!year || invoiceYear === year);
 
         const search = searchTerm.trim().toLowerCase();
         const matchesSearch =
@@ -188,12 +188,32 @@ Download PDF: ${invoiceLink}`;
                         <td className="px-6 py-4 truncate max-w-[140px]">
                           {invoice.name}
                         </td>
-                        <td className="px-6 py-4">{formatDate(invoice.date)}</td>
-                        <td className="px-6 py-4">₹{invoice.amount}</td>
+                        <td className="px-6 py-4">
+                          {formatDate(invoice.date)}
+                        </td>
+                        <td className="px-6 py-4">
+                          {invoice.discount ? (
+                            <>
+                              <span className="line-through text-red-400 mr-2">
+                                ₹{invoice.amount.toFixed(2)}
+                              </span>
+                              <span className="text-green-400 font-semibold">
+                                ₹
+                                {(
+                                  invoice.amount -
+                                  (invoice.amount * invoice.discount) / 100
+                                ).toFixed(2)}
+                              </span>
+                            </>
+                          ) : (
+                            <>₹{invoice.amount.toFixed(2)}</>
+                          )}
+                        </td>
                         <td className="px-6 py-4">
                           <span
                             className={`px-3 py-1 rounded-full text-sm font-semibold shadow ${
-                              statusColor[invoice.status] || "bg-gray-700 text-white"
+                              statusColor[invoice.status] ||
+                              "bg-gray-700 text-white"
                             }`}
                           >
                             {invoice.status}
@@ -235,7 +255,9 @@ Download PDF: ${invoiceLink}`;
             <div className="mt-6 text-right">
               <p className="text-sm text-gray-400">
                 Total Invoices:{" "}
-                <span className="text-white font-semibold">{invoices.length}</span>
+                <span className="text-white font-semibold">
+                  {invoices.length}
+                </span>
               </p>
             </div>
           </>
