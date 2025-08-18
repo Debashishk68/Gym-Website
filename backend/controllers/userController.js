@@ -336,21 +336,24 @@ const revenueChart = async (req, res) => {
             $dateToString: {
               format: "%Y-%m",
               date: "$createdAt",
-              timezone: "Asia/Kolkata", // match your local time zone
+              timezone: "Asia/Kolkata",
             },
+          },
+          netAmount: {
+            $subtract: ["$amount", { $ifNull: ["$discount", 0] }],
           },
         },
       },
       {
         $group: {
           _id: "$yearMonth",
-          totalRevenue: { $sum: "$amount" },
+          totalRevenue: { $sum: "$netAmount" },
         },
       },
       { $sort: { _id: 1 } },
     ]);
 
-    // Generate last 12 months with the SAME format as $dateToString
+    // Fill 12 months
     function getLast12Months() {
       const months = [];
       const date = new Date();
@@ -359,7 +362,7 @@ const revenueChart = async (req, res) => {
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
           2,
           "0"
-        )}`; // YYYY-MM
+        )}`;
         months.push({
           month: d.toLocaleString("default", { month: "short" }),
           yearMonth: key,
@@ -392,20 +395,18 @@ const revenueChart = async (req, res) => {
         $addFields: {
           isoWeek: { $isoWeek: "$createdAt" },
           isoYear: { $isoWeekYear: "$createdAt" },
+          netAmount: {
+            $subtract: ["$amount", { $ifNull: ["$discount", 0] }],
+          },
         },
       },
       {
         $group: {
-          _id: {
-            week: "$isoWeek",
-            year: "$isoYear",
-          },
-          totalRevenue: { $sum: "$amount" },
+          _id: { week: "$isoWeek", year: "$isoYear" },
+          totalRevenue: { $sum: "$netAmount" },
         },
       },
-      {
-        $sort: { "_id.year": 1, "_id.week": 1 },
-      },
+      { $sort: { "_id.year": 1, "_id.week": 1 } },
       {
         $addFields: {
           week: {
@@ -419,9 +420,7 @@ const revenueChart = async (req, res) => {
           },
         },
       },
-      {
-        $project: { _id: 0, week: 1, totalRevenue: 1 },
-      },
+      { $project: { _id: 0, week: 1, totalRevenue: 1 } },
     ]);
 
     // ================== DAILY REVENUE ==================
@@ -436,21 +435,22 @@ const revenueChart = async (req, res) => {
       },
       {
         $addFields: {
-          date: {
-            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          netAmount: {
+            $subtract: ["$amount", { $ifNull: ["$discount", 0] }],
           },
         },
       },
       {
         $group: {
           _id: "$date",
-          totalRevenue: { $sum: "$amount" },
+          totalRevenue: { $sum: "$netAmount" },
         },
       },
       { $sort: { _id: 1 } },
     ]);
 
-    // Fill missing daily dates
+    // Fill 7 days
     function getLast7Days() {
       const days = [];
       const date = new Date();
